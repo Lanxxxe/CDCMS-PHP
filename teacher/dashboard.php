@@ -1,14 +1,63 @@
 <?php
 session_start();
 $pageTitle = "Teacher Dashboard";
-// include '../includes/header.php';
 require_once '../config/database.php';
-// require_once '../includes/functions.php';
 
 // if (!isLoggedIn() || !hasRole('teacher')) {
 //     header('Location: ../login.php');
 //     exit;
 // }
+
+
+try {
+    // Fetch total number of guardians
+    $stmt = $pdo->prepare("SELECT COUNT(*) AS total_guardians FROM guardian_info");
+    $stmt->execute();
+    $total_guardians = $stmt->fetch(PDO::FETCH_ASSOC)['total_guardians'];
+
+    // Fetch total number of enrolled students
+    $stmt = $pdo->prepare("SELECT COUNT(*) AS total_enrolled FROM student");
+    $stmt->execute();
+    $total_enrolled = $stmt->fetch(PDO::FETCH_ASSOC)['total_enrolled'];
+
+    // Fetch total number of Parent Portal users
+    // $stmt = $pdo->prepare("SELECT COUNT(*) AS total_parents FROM parent_portal");
+    // $stmt->execute();
+    // $total_parents = $stmt->fetch(PDO::FETCH_ASSOC)['total_parents'];
+
+    // Fetch requirements status
+     // Fetch requirements status: check if any of the required fields are NULL or empty
+    $stmt = $pdo->prepare("
+        SELECT 
+            SUM(CASE WHEN psa IS NULL OR psa = '' OR 
+                        recentphoto IS NULL OR recentphoto = '' OR 
+                        immunizationcard IS NULL OR immunizationcard = '' OR 
+                        guardianqcid IS NULL OR guardianqcid = '' THEN 1 ELSE 0 END) AS incomplete_count,
+            SUM(CASE WHEN psa IS NOT NULL AND psa <> '' AND 
+                        recentphoto IS NOT NULL AND recentphoto <> '' AND 
+                        immunizationcard IS NOT NULL AND immunizationcard <> '' AND 
+                        guardianqcid IS NOT NULL AND guardianqcid <> '' THEN 1 ELSE 0 END) AS complete_count
+        FROM enrollment
+    ");
+    $stmt->execute();
+    $requirements_status = $stmt->fetch(PDO::FETCH_ASSOC);;
+
+    // Fetch attendance summary
+    $stmt = $pdo->prepare("SELECT 
+        SUM(CASE WHEN attendance_status = 'present' THEN 1 ELSE 0 END) AS present_count,
+        SUM(CASE WHEN attendance_status = 'absent' THEN 1 ELSE 0 END) AS absent_count,
+        COUNT(*) AS total_students
+    FROM attendance");
+    $stmt->execute();
+    $attendance_summary = $stmt->fetch(PDO::FETCH_ASSOC);
+
+} catch (PDOException $e) {
+    $error = $e->getMessage();
+}
+
+
+
+
 
 include './includes/header.php';
 ?>
@@ -23,47 +72,47 @@ include './includes/sidebar.php';
 <main role="main" class="main-content">
             
     <!--For Notification header naman ito-->
-    <!-- <div class="modal fade modal-notif modal-slide" tabindex="-1" role="dialog" aria-labelledby="defaultModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-sm" role="document">
-        <div class="modal-content">
-        <div class="modal-header">
-            <h5 class="modal-title" id="defaultModalLabel">Notifications</h5>
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-            </button>
-        </div>
+    <div class="modal fade modal-notif modal-slide" tabindex="-1" role="dialog" aria-labelledby="defaultModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-sm" role="document">
+            <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="defaultModalLabel">Notifications</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
 
-        <div class="modal-body">
-            <div class="list-group list-group-flush my-n3">
-                <div class="col-12 mb-4">
-                <div class="alert alert-success alert-dismissible fade show" role="alert" id="notification">
-                    <img class="fade show" src="{% static '/images/unified-lgu-logo.png' %}" width="35" height="35">
-                    <strong style="font-size:12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"></strong> 
-                    <button type="button" class="close" data-dismiss="alert" aria-label="Close" onclick="removeNotification()">
-                    <span aria-hidden="true">&times;</span>
-                    </button>
+            <div class="modal-body">
+                <div class="list-group list-group-flush my-n3">
+                    <div class="col-12 mb-4">
+                    <div class="alert alert-success alert-dismissible fade show" role="alert" id="notification">
+                        <img class="fade show" src="../assets/images/unified-lgu-logo.png" width="35" height="35">
+                        <strong style="font-size:12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"></strong> 
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close" onclick="removeNotification()">
+                        <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    </div>
+
+                <div id="no-notifications" style="display: none; text-align:center; margin-top:10px;">
+                    No notifications
                 </div>
                 </div>
+            </div>
 
-            <div id="no-notifications" style="display: none; text-align:center; margin-top:10px;">
-                No notifications
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary btn-block" onclick="clearAllNotifications()">Clear All</button>
             </div>
             </div>
-        </div>
-
-        <div class="modal-footer">
-            <button type="button" class="btn btn-secondary btn-block" onclick="clearAllNotifications()">Clear All</button>
-        </div>
         </div>
     </div>
-    </div> -->
 
 
     <!-- Page Content Here -->
     <div class="container-fluid py-3">
         <div class="welcome-section">
-            <h3 class="mb-0">Welcome to</h3>
-            <h3 class="text-muted">Child Development Center Management System</h3>
+            <h3 class="mb-0">Welcome to Child Development Center Management System</h3>
+            <h3 class="text-muted"></h3>
         </div>
 
         <!-- Dashboard Section -->
@@ -75,7 +124,7 @@ include './includes/sidebar.php';
                 <div class="col-md-4 mb-4">
                     <div class="dashboard-card h-100">
                         <h5 class="mb-0"><i class="bi bi-people fs-3"></i> GUARDIAN</h5>
-                        <h3 class="mb-0 pe-4 text-primary">5</h3>
+                        <h3 class="mb-0 pe-4 text-primary"><?php echo $total_guardians ?></h3>
                     </div>
                 </div>
                 
@@ -83,7 +132,7 @@ include './includes/sidebar.php';
                 <div class="col-md-4 mb-4">
                     <div class="dashboard-card h-100">
                         <h5 class="mb-0"><i class="bi bi-person-check fs-3"></i> ENROLLED</h5>
-                        <h3 class="mb-0 pe-4 text-primary"></h3>
+                        <h3 class="mb-0 pe-4 text-primary"><?php echo $total_enrolled ?></h3>
                     </div>
                 </div>
                 
@@ -110,12 +159,12 @@ include './includes/sidebar.php';
                             <div class="mt-5 d-flex justify-content-around">
                                 <div>
                                     <h6>Requirements Status of the Students</h6>
-                                    <div id="requirementsChart" data-complete="{{ complete_count }}" data-incomplete="{{ incomplete_count }}"></div>
+                                    <div id="requirementsChart" data-complete="<?php echo $requirements_status['complete_count'] ?>" data-incomplete="<?php echo $requirements_status['incomplete_count'] ?>"></div>
                                 </div>
 
                                 <div>
                                     <h6>Attendance Summay</h6>
-                                    <div id="attendanceSummary" data-present="{{ present_count }}" data-absent="{{ absent_count }}" data-total="{{ total_students }}"></div>
+                                    <div id="attendanceSummary" data-present="<?php echo $attendance_summary['present_count'] ?>" data-absent="<?php echo $attendance_summary['present_count'] ?>" data-total="<?php echo $attendance_summary['total_students'] ?>"></div>
                                 </div>
                             </div>
                         </div>

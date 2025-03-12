@@ -91,7 +91,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt->execute();
             $result = $stmt->fetch();
             $next_id = ($result['max_id'] ?? 0) + 1;
-            $student_id = 'AY2425-' . $next_id; 
+            $formatted_id = str_pad($next_id, 2, '0', STR_PAD_LEFT); 
+            $student_id = 'AY2425-' . $formatted_id; 
             
             // Insert student
             $stmt = $pdo->prepare("INSERT INTO student (student_id, firstName, lastName, middleName, suffix, birthDate, age, sex, healthHistory) 
@@ -154,7 +155,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $qcid_file = uploadFile($guardianQCID, $upload_dir, 'qcid', $fName, $lName);
             
             // Insert requirements
-            // Insert enrollment
             $stmt = $pdo->prepare("INSERT INTO enrollment (student_id, schedule, psa, immunizationCard, recentPhoto, guardianQCID) VALUES (?, ?, ?, ?, ?, ?)");
             $stmt->execute([$student_db_id, $schedule, $psa_file, $immunization_file, $photo_file, $qcid_file]);
             $pdo->commit();

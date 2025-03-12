@@ -1,14 +1,16 @@
 <?php
 session_start();
 $pageTitle = "Teacher Dashboard";
-// include '../includes/header.php';
 require_once '../config/database.php';
-// require_once '../includes/functions.php';
 
 // if (!isLoggedIn() || !hasRole('teacher')) {
 //     header('Location: ../login.php');
 //     exit;
 // }
+
+
+
+
 
 
 
@@ -40,7 +42,7 @@ include './includes/sidebar.php';
                 <div class="list-group list-group-flush my-n3">
                     <div class="col-12 mb-4">
                     <div class="alert alert-success alert-dismissible fade show" role="alert" id="notification">
-                        <img class="fade show" src="{% static '/images/unified-lgu-logo.png' %}" width="35" height="35">
+                        <img class="fade show" src="../assets/images/unified-lgu-logo.png" width="35" height="35">
                         <strong style="font-size:12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"></strong> 
                         <button type="button" class="close" data-dismiss="alert" aria-label="Close" onclick="removeNotification()">
                         <span aria-hidden="true">&times;</span>
@@ -64,34 +66,45 @@ include './includes/sidebar.php';
 
     <!-- Page Content Here -->
     <div class="container-fluid py-3">
-        <!-- Welcome Section -->
         <div class="welcome-section">
-            <h3 class="mb-0">Teacher Management</h3>
+            <h3 class="mb-0">Notifications</h3>
         </div>
-        <div class="container-fluid px-4">
-            <div class="table-responsive">
-                <table class="table table-bordered table-striped table-sm mt-3">
-                    <thead class="">
-                        <tr class="text-center table-head-columns">
-                            <th class="bg-primary text-white" scope="col">Position</th>
-                            <th class="bg-primary text-white" scope="col">Teacher's Name</th>
-                            <th class="bg-primary text-white" scope="col">Contact Number</th>
-                            <th class="bg-primary text-white" scope="col">Schedule</th>
-                            <th class="bg-primary text-white" scope="col">Email</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>test</td>
-                            <td>test</td>
-                            <td>test</td>
-                            <td>test</td>
-                            <td>test</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>    
+
+        <div class="container-fluid px-4 mt-5 ">
+            <ul class="list-group">
+                {% for notif in page_obj %}
+                <div class="d-flex mt-3">
+                    <div style="width: 150px; height: 100px; ">
+                        <img src="{{ notif.file_path }}" class="img-fluid" style="width: 150px; height: 100px; object-fit: contain;" alt="">
+                    </div>
+                    <li class="list-group-item">
+                        <strong>{{ notif.name }}</strong> {{ notif.action }} a file <br>
+                        <small>{{ notif.date_created }}</small>
+                    </li>
+
+                </div>
+                {% empty %}
+                <li class="list-group-item text-center">No notifications found.</li>
+                {% endfor %}
+            </ul>
+
+            <!-- Pagination -->
+            <nav>
+                <ul class="pagination justify-content-center mt-3">
+                {% if page_obj.has_previous %}
+                    <li class="page-item"><a class="page-link" href="?page=1">First</a></li>
+                    <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a></li>
+                {% endif %}
+
+                <li class="page-item active"><span class="page-link">{{ page_obj.number }}</span></li>
+
+                {% if page_obj.has_next %}
+                    <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a></li>
+                    <li class="page-item"><a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Last</a></li>
+                {% endif %}
+                </ul>
+            </nav>
+        </div>
     </div>
 </main>
 

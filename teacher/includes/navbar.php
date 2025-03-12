@@ -102,7 +102,6 @@
                 <li class="nav-item nav-notif">
                 <section class="nav-link text-muted my-2 circle-icon" href="#" data-toggle="modal" data-target=".modal-notif">
                     <span class="fe fe-bell fe-16"></span>
-                
                         <span id="notification-count" style="
                         position: absolute; 
                         top: 12px; right: 5px; 
@@ -114,7 +113,7 @@
                         justify-content: center;
                         align-items: center;
                         border-radius: 50px;
-                        ">
+                        "></span>
                     
                 </section>
                 </li>

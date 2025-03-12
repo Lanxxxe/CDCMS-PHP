@@ -10,6 +10,17 @@ require_once '../config/database.php';
 //     exit;
 // }
 
+// Get all announcements
+$query = "SELECT * FROM announcement ORDER BY date_posted DESC";
+$stmt = $pdo->prepare($query);
+$stmt->execute();
+$announcements = $stmt->fetchAll();
+
+// Check for messages from other pages
+$message = isset($_GET['message']) ? $_GET['message'] : '';
+$messageType = isset($_GET['type']) ? $_GET['type'] : '';
+$showAlert = !empty($message);
+
 include './includes/header.php';
 ?>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
@@ -23,40 +34,40 @@ include './includes/sidebar.php';
 <main role="main" class="main-content">
             
     <!--For Notification header naman ito-->
-    <!-- <div class="modal fade modal-notif modal-slide" tabindex="-1" role="dialog" aria-labelledby="defaultModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-sm" role="document">
-        <div class="modal-content">
-        <div class="modal-header">
-            <h5 class="modal-title" id="defaultModalLabel">Notifications</h5>
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-            </button>
-        </div>
+    <div class="modal fade modal-notif modal-slide" tabindex="-1" role="dialog" aria-labelledby="defaultModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-sm" role="document">
+            <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="defaultModalLabel">Notifications</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
 
-        <div class="modal-body">
-            <div class="list-group list-group-flush my-n3">
-                <div class="col-12 mb-4">
-                <div class="alert alert-success alert-dismissible fade show" role="alert" id="notification">
-                    <img class="fade show" src="{% static '/images/unified-lgu-logo.png' %}" width="35" height="35">
-                    <strong style="font-size:12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"></strong> 
-                    <button type="button" class="close" data-dismiss="alert" aria-label="Close" onclick="removeNotification()">
-                    <span aria-hidden="true">&times;</span>
-                    </button>
+            <div class="modal-body">
+                <div class="list-group list-group-flush my-n3">
+                    <div class="col-12 mb-4">
+                    <div class="alert alert-success alert-dismissible fade show" role="alert" id="notification">
+                        <img class="fade show" src="{% static '/images/unified-lgu-logo.png' %}" width="35" height="35">
+                        <strong style="font-size:12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"></strong> 
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close" onclick="removeNotification()">
+                        <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    </div>
+
+                <div id="no-notifications" style="display: none; text-align:center; margin-top:10px;">
+                    No notifications
                 </div>
                 </div>
+            </div>
 
-            <div id="no-notifications" style="display: none; text-align:center; margin-top:10px;">
-                No notifications
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary btn-block" onclick="clearAllNotifications()">Clear All</button>
             </div>
             </div>
-        </div>
-
-        <div class="modal-footer">
-            <button type="button" class="btn btn-secondary btn-block" onclick="clearAllNotifications()">Clear All</button>
-        </div>
         </div>
     </div>
-    </div> -->
 
 
     <!-- Page Content Here -->
@@ -64,7 +75,7 @@ include './includes/sidebar.php';
         <!-- Welcome Section -->
         <div class="welcome-section d-flex align-items-center justify-content-between">
             <h3 class="mb-0">Announcement</h3>
-            <a href="{% url 'add_announcement' %}" class="btn btn-primary btn-sm"><i class="fa-solid fa-plus"></i> Announcement</a>
+            <a href="./add_announcement.php" class="btn btn-primary btn-sm"><i class="fa-solid fa-plus"></i> Announcement</a>
         </div>
 
         <div class="container-fluid px-4">
@@ -80,25 +91,81 @@ include './includes/sidebar.php';
                         </tr>
                     </thead>
                     <tbody>
+                        <?php if (count($announcements) > 0): ?>
+                                <?php foreach ($announcements as $announcement): ?>
+                                    <tr>
+                                        <td class="text-center">
+                                            <?php if (!empty($announcement['picture'])): ?>
+                                                <img src="uploads/announcements/<?php echo htmlspecialchars($announcement['picture']); ?>" 
+                                                    alt="<?php echo htmlspecialchars($announcement['title']); ?>" 
+                                                    width="100" class="img-thumbnail">
+                                            <?php else: ?>
+                                                <span class="text-muted">No image</span>
+                                            <?php endif; ?>
+                                        </td>
+                                        <td><?php echo htmlspecialchars($announcement['title']); ?></td>
+                                        <td><?php echo date('F j, Y g:i A', strtotime($announcement['date_posted'])); ?></td>
+                                        <td><?php echo nl2br(htmlspecialchars($announcement['description'])); ?></td>
+                                        <td class="text-start">
+                                            <a href="./edit_announcement.php?id=<?php echo $announcement['id']; ?>" class="btn btn-primary btn-sm">
+                                                <i class="fa-solid fa-edit"></i> Update
+                                            </a>
+                                            <button class="btn btn-danger btn-sm delete-btn" data-id="<?php echo $announcement['id']; ?>">
+                                                <i class="fa-solid fa-trash"></i> Delete
+                                            </button>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            <?php else: ?>
                             <tr>
-                                <td>
-                                        <img src="/asEASdwaSEAdWas/{{ announcement.picture}}" alt="{{ announcement.title }}" width="100">
-
-                                </td>
-                                <td> </td>
-                                <td></td>
-                                <td></td>
-                                <td>
-                                    <a href="{% url 'update_announcement' announcement.id %}" class="btn btn-primary btn-sm"><i class="fa-solid fa-edit"></i> Update</a>
-                                    <a href="{% url 'delete_announcement' announcement.id %}" class="btn btn-danger btn-sm"><i class="fa-solid fa-trash"></i> Delete</a>
-                                </td>
+                                <td colspan="5" class="text-center">No announcements found.</td>
                             </tr>
+                        <?php endif; ?>
                     </tbody>
                 </table>
             </div>
         </div> 
     </div>
+
+
 </main>
+
+
+<script>
+    // Handle delete button clicks
+    document.querySelectorAll('.delete-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const announcementId = this.getAttribute('data-id');
+            
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "You won't be able to revert this!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Yes, delete it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = `./delete_announcement.php?id=${announcementId}`;
+                }
+            });
+        });
+    });
+    
+    // Show alert if message exists
+    <?php if ($showAlert): ?>
+    document.addEventListener('DOMContentLoaded', function() {
+        Swal.fire({
+            title: '<?php echo $messageType === "success" ? "Success!" : "Error!"; ?>',
+            text: '<?php echo addslashes($message); ?>',
+            icon: '<?php echo $messageType; ?>',
+            confirmButtonText: 'OK',
+            confirmButtonColor: '<?php echo $messageType === "success" ? "#28a745" : "#dc3545"; ?>'
+        });
+    });
+    <?php endif; ?>
+</script>
 
 <?php
 include './includes/footer.php';

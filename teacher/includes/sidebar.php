@@ -18,7 +18,7 @@
         <!--Sidebar ito-->
         <ul class="navbar-nav flex-fill w-100 mb-2">
             <li class="nav-item dropdown">
-                <a class="nav-link" href="">
+                <a class="nav-link" href="./dashboard.php">
                     <i class="fas fa-chart-line"></i>
                     <span class="ml-3 item-text">Dashboard</span>
                 </a>

@@ -269,7 +269,8 @@ require_once './includes/functions.php';
                             icon: "success",
                             title: data.status,
                             text: data.message,
-                            confirmButtonText: "OK"
+                            confirmButtonText: "OK",
+                            confirmButtonColor: '<?php echo $messageType === "success" ? "#28a745" : "#dc3545"; ?>'
                         }).then(() => {
                             window.location.href = './index.php'; // Reload the page or redirect
                         });
