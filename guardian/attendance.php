@@ -1,75 +1,103 @@
 <?php
 session_start();
-$pageTitle = "Attendance";
-include '../includes/header.php';
+$pageTitle = "Teacher Dashboard";
+// include '../includes/header.php';
 require_once '../config/database.php';
-require_once '../includes/functions.php';
+// require_once '../includes/functions.php';
 
-if (!isLoggedIn() || !hasRole('guardian')) {
-    header('Location: ../login.php');
-    exit;
-}
+// if (!isLoggedIn() || !hasRole('teacher')) {
+//     header('Location: ../login.php');
+//     exit;
+// }
 
-// Get guardian's student ID
-$guardian_id = $_SESSION['user_id'];
-$stmt = $pdo->prepare("SELECT student_id FROM guardians WHERE user_id = ?");
-$stmt->execute([$guardian_id]);
-$student_id = $stmt->fetchColumn();
+include './includes/header.php';
+?>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<link rel="stylesheet" href="../assets/css/user_navbar.css">
 
-if (!$student_id) {
-    displayAlert("No student found for this guardian", "danger");
-    header('Location: announcement.php');
-    exit;
-}
-
-// Get attendance records for the student
-$stmt = $pdo->prepare("
-    SELECT a.date, a.status, s.student_id, s.firstName, s.lastName, s.middleName
-    FROM attendance a
-    JOIN students s ON a.student_id = s.id
-    WHERE s.id = ?
-    ORDER BY a.date DESC
-");
-$stmt->execute([$student_id]);
-$attendance_records = $stmt->fetchAll();
-
-include 'includes/sidebar.php';
+<?php 
+include './includes/navbar.php';
+include './includes/sidebar.php';
 ?>
 
-<div class="welcome-section">
-    <h3 class="mb-0">Attendance</h3>
-</div>
+<main role="main" class="main-content">
+            
+    <!--For Notification header naman ito-->
+    <!-- <div class="modal fade modal-notif modal-slide" tabindex="-1" role="dialog" aria-labelledby="defaultModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-sm" role="document">
+        <div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title" id="defaultModalLabel">Notifications</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
 
-<div class="container-fluid px-4 mt-3">
-    <div class="table-responsive">
-        <table class="table table-bordered table-striped table-sm">
-            <thead class="">
-                <tr class="text-center table-head-columns">
-                    <th class="bg-primary text-white" scope="col">Student ID</th>
-                    <th class="bg-primary text-white" scope="col">Student Name</th>
-                    <th class="bg-primary text-white" scope="col">Date</th>
-                    <th class="bg-primary text-white" scope="col">Status</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php foreach ($attendance_records as $record): ?>
-                    <tr>
-                        <td class="px-2"><?php echo $record['student_id']; ?></td>
-                        <td><?php echo $record['lastName'] . ', ' . $record['firstName'] . ' ' . $record['middleName']; ?></td>
-                        <td><?php echo date('Y-m-d', strtotime($record['date'])); ?></td>
-                        <td><?php echo $record['status']; ?></td>
-                    </tr>
-                <?php endforeach; ?>
-                
-                <?php if (empty($attendance_records)): ?>
-                    <tr>
-                        <td colspan="4" class="text-center">No attendance records found.</td>
-                    </tr>
-                <?php endif; ?>
-            </tbody>
-        </table>
+        <div class="modal-body">
+            <div class="list-group list-group-flush my-n3">
+                <div class="col-12 mb-4">
+                <div class="alert alert-success alert-dismissible fade show" role="alert" id="notification">
+                    <img class="fade show" src="{% static '/images/unified-lgu-logo.png' %}" width="35" height="35">
+                    <strong style="font-size:12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"></strong> 
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close" onclick="removeNotification()">
+                    <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                </div>
+
+            <div id="no-notifications" style="display: none; text-align:center; margin-top:10px;">
+                No notifications
+            </div>
+            </div>
+        </div>
+
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary btn-block" onclick="clearAllNotifications()">Clear All</button>
+        </div>
+        </div>
     </div>
-</div>
+    </div> -->
 
-<?php include '../includes/footer.php'; ?>
+
+    <!-- Page Content Here -->
+    <div class="container-fluid py-3">
+        <div class="welcome-section">
+            <h3 class="mb-0">Attendance</h3>
+        </div>
+
+        <div class="container-fluid px-4 mt-3">
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped table-sm">
+                    <thead class="">
+                        <tr class="text-center table-head-columns">
+                            <th class="bg-primary text-white" scope="col">Student ID</th>
+                            <th class="bg-primary text-white" scope="col">Student Name</th>
+                            <th class="bg-primary text-white" scope="col">Date</th>
+                            <th class="bg-primary text-white" scope="col">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                            <tr >
+                                <td class="px-2"></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <td colspan="4" class="text-center">No attendance records found for this week.</td>
+                            </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>  
+    </div>
+</main>
+
+<?php
+include './includes/footer.php';
+
+?>
+
+
+
 

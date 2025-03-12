@@ -61,79 +61,34 @@ include './includes/sidebar.php';
 
     <!-- Page Content Here -->
     <div class="container-fluid py-3">
+        <!-- Welcome Section -->
         <div class="welcome-section">
-            <h3 class="mb-0">Guardian Management</h3>
+            <h3 class="mb-0">Teacher Management</h3>
         </div>
-
         <div class="container-fluid px-4">
-            <!-- Filter Form -->
-            <form method="GET" class="my-3">
-                <label for="kinder_filter">Filter by Kinder Level:</label>
-                <select name="kinder_level" id="kinder_filter" class="form-control w-auto d-inline">
-                    <option value="">All</option>
-                    <option value="K1">K1</option>
-                    <option value="K2">K2</option>
-                    <option value="K3">K3</option>
-                </select>
-                <button type="submit" class="btn btn-primary">Filter</button>
-            </form>
-
             <div class="table-responsive">
                 <table class="table table-bordered table-striped table-sm mt-3">
                     <thead class="">
                         <tr class="text-center table-head-columns">
-                            <th class="bg-primary text-white" scope="col">Student Name</th>
-                            <th class="bg-primary text-white" scope="col">Relationship</th>
-                            <th class="bg-primary text-white" scope="col">Guardian Name</th>
+                            <th class="bg-primary text-white" scope="col">Position</th>
+                            <th class="bg-primary text-white" scope="col">Teacher's Name</th>
                             <th class="bg-primary text-white" scope="col">Contact Number</th>
+                            <th class="bg-primary text-white" scope="col">Schedule</th>
                             <th class="bg-primary text-white" scope="col">Email</th>
-                            <th class="bg-primary text-white" scope="col">Action</th>
                         </tr>
                     </thead>
                     <tbody>
-                            <tr>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td>
-                                    <a href="" class="btn btn-primary btn-sm">
-                                        <i class="fa-solid fa-edit"></i> Update
-                                    </a>
-                        
-                                </td>
-                            </tr>
-                            <tr>
-                                <td colspan="6" class="text-center">No guardian records found.</td>
-                            </tr>
+                        <tr>
+                            <td>test</td>
+                            <td>test</td>
+                            <td>test</td>
+                            <td>test</td>
+                            <td>test</td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
-        </div>
-
-        <!-- Pagination Controls -->
-        <nav>
-            <ul class="pagination justify-content-center">
-                <li class="page-item">
-                    <a class="page-link" href="">&laquo; First</a>
-                </li>
-                <li class="page-item">
-                    <a class="page-link" href="">Previous</a>
-                </li>
-
-                <li class="page-item active">
-                    <span class="page-link"></span>
-                </li>
-
-                <li class="page-item">
-                    <a class="page-link" href="">Next</a>
-                </li>
-                <li class="page-item">
-                    <a class="page-link" href="">Last &raquo;</a>
-                </li>
-            </ul>
-        </nav>
+        </div>    
     </div>
 </main>
 

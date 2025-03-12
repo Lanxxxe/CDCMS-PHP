@@ -1,18 +1,207 @@
 <?php
 session_start();
 $pageTitle = "Teacher Dashboard";
-include '../includes/header.php';
+// include '../includes/header.php';
 require_once '../config/database.php';
-require_once '../includes/functions.php';
+// require_once '../includes/functions.php';
 
-if (!isLoggedIn() || !hasRole('teacher')) {
-    header('Location: ../login.php');
-    exit;
-}
+// if (!isLoggedIn() || !hasRole('teacher')) {
+//     header('Location: ../login.php');
+//     exit;
+// }
 
-include 'includes/sidebar.php';
+include './includes/header.php';
+?>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<link rel="stylesheet" href="../assets/css/user_navbar.css">
 
-// Add your teacher dashboard content here
+<?php 
+include './includes/navbar.php';
+include './includes/sidebar.php';
+?>
 
-include '../includes/footer.php';
+<main role="main" class="main-content">
+            
+    <!--For Notification header naman ito-->
+    <!-- <div class="modal fade modal-notif modal-slide" tabindex="-1" role="dialog" aria-labelledby="defaultModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-sm" role="document">
+        <div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title" id="defaultModalLabel">Notifications</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+
+        <div class="modal-body">
+            <div class="list-group list-group-flush my-n3">
+                <div class="col-12 mb-4">
+                <div class="alert alert-success alert-dismissible fade show" role="alert" id="notification">
+                    <img class="fade show" src="{% static '/images/unified-lgu-logo.png' %}" width="35" height="35">
+                    <strong style="font-size:12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"></strong> 
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close" onclick="removeNotification()">
+                    <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                </div>
+
+            <div id="no-notifications" style="display: none; text-align:center; margin-top:10px;">
+                No notifications
+            </div>
+            </div>
+        </div>
+
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary btn-block" onclick="clearAllNotifications()">Clear All</button>
+        </div>
+        </div>
+    </div>
+    </div> -->
+
+
+    <!-- Page Content Here -->
+    <div class="container-fluid py-3">
+        <div class="welcome-section">
+            <h3 class="mb-0">Welcome to</h3>
+            <h3 class="text-muted">Child Development Center Management System</h3>
+        </div>
+
+        <!-- Dashboard Section -->
+        <div class="container-fluid px-4">
+            <h5 class="mb-4 font-weight-bold">DASHBOARD</h5>
+            
+            <div class="row">
+                <!-- Guardian Card -->
+                <div class="col-md-4 mb-4">
+                    <div class="dashboard-card h-100">
+                        <h5 class="mb-0"><i class="bi bi-people fs-3"></i> GUARDIAN</h5>
+                        <h3 class="mb-0 pe-4 text-primary">5</h3>
+                    </div>
+                </div>
+                
+                <!-- Enrolled Card -->
+                <div class="col-md-4 mb-4">
+                    <div class="dashboard-card h-100">
+                        <h5 class="mb-0"><i class="bi bi-person-check fs-3"></i> ENROLLED</h5>
+                        <h3 class="mb-0 pe-4 text-primary"></h3>
+                    </div>
+                </div>
+                
+                <!-- Parent Portal Card -->
+                <div class="col-md-4 mb-4">
+                    <div class="dashboard-card h-100">
+                        <h5 class="mb-0"><i class="bi bi-display fs-3"></i> Parent Portal</h5>
+                        <h3 class="mb-0 pe-4 text-primary">5</h3>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Student Analytics Card -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="analytics-card">
+                        <div class="d-flex align-items-center mb-3">
+                            <h5 class="mb-0"><i class="bi bi-bar-chart fs-4 me-2"></i> Student Analytics</h5>
+                        </div>
+                        <div class="analytics-content">
+                            <!-- Analytics content would go here -->
+                            <p class="text-secondary">Student performance analytics and metrics will be displayed here.</p>
+                        
+                            <div class="mt-5 d-flex justify-content-around">
+                                <div>
+                                    <h6>Requirements Status of the Students</h6>
+                                    <div id="requirementsChart" data-complete="{{ complete_count }}" data-incomplete="{{ incomplete_count }}"></div>
+                                </div>
+
+                                <div>
+                                    <h6>Attendance Summay</h6>
+                                    <div id="attendanceSummary" data-present="{{ present_count }}" data-absent="{{ absent_count }}" data-total="{{ total_students }}"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // Function to render a pie chart
+    function renderPieChart(containerId, seriesData, labelsData, colors) {
+        const chartContainer = document.querySelector(`#${containerId}`);
+
+        if (!chartContainer) {
+            console.error(`Chart container #${containerId} not found!`);
+            return;
+        }
+
+        var options = {
+            series: seriesData,
+            chart: {
+                width: 380,
+                type: 'pie',
+            },
+            labels: labelsData,
+            colors: colors,
+            responsive: [{
+                breakpoint: 480,
+                options: {
+                    chart: {
+                        width: 200
+                    },
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }]
+        };
+
+        var chart = new ApexCharts(chartContainer, options);
+        chart.render();
+    }
+
+    // Render Requirements Chart
+    (function () {
+        const chartContainer = document.querySelector("#requirementsChart");
+        if (chartContainer) {
+            let completeCount = parseInt(chartContainer.dataset.complete) || 0;
+            let incompleteCount = parseInt(chartContainer.dataset.incomplete) || 0;
+
+            renderPieChart(
+                "requirementsChart",
+                [completeCount, incompleteCount],
+                [`${completeCount} Complete`, `${incompleteCount} Incomplete`],
+                ['#191d67', '#dc3545']
+            );
+        }
+    })();
+
+    // Render Attendance Summary Chart
+    (function () {
+        const chartContainer = document.querySelector("#attendanceSummary");
+        if (chartContainer) {
+            let presentCount = parseInt(chartContainer.dataset.present) || 0;
+            let absentCount = parseInt(chartContainer.dataset.absent) || 0;
+
+            renderPieChart(
+                "attendanceSummary",
+                [presentCount, absentCount],
+                [`${presentCount} Present`, `${absentCount} Absent`],
+                ['#28a745', '#dc3545']
+            );
+        }
+    })();
+        
+    });
+</script>
+
+<?php
+include './includes/footer.php';
+
+?>
+
+
+
 

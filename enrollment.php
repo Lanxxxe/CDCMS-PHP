@@ -2,9 +2,9 @@
 session_start();
 // Enrollment page
 $pageTitle = "Enrollment";
-include 'includes/header.php';
-require_once 'config/database.php';
-require_once 'includes/functions.php';
+include './includes/header.php';
+require_once './config/database.php';
+require_once './includes/functions.php';
 
 ?>
 
@@ -12,7 +12,6 @@ require_once 'includes/functions.php';
     <a href="index.php">
         <img src="./assets/images/cropMainCDC.png" class="enroll-header-img" width="125" height="125" alt="cdc">
     </a>
-    
     <div class="text-center">
         <p class="text-white">CHILD DEVELOPMENT CENTER MANAGEMENT SYSTEM</p>
         <p class="text-white">ENROLLMENT PROCESS</p>
@@ -215,9 +214,9 @@ require_once 'includes/functions.php';
                     <label for="schedule"><span class="text-danger">*</span>Schedule</label>
                     <select class="form-control" id="schedule" name="schedule" required>
                         <option value="">Select</option>
-                        <option value="K1">Kinder 1</option>
-                        <option value="K2">Kinder 2</option>
-                        <option value="K3">Kinder 3</option>
+                        <option value="K1">K1 (3y/o) - 8:00am - 10:00am</option>
+                        <option value="K2">K2 (4y/o) - 10:15am - 12:15nn</option>
+                        <option value="K3">K3 (4y/o) - 1:30pm - 3:30pm</option>
                     </select>
                 </div>
             </div>
@@ -263,20 +262,21 @@ require_once 'includes/functions.php';
                 processData: false,
                 contentType: false,
                 success: function (response) {
-                    var data = JSON.parse(response);
+                    console.log(response);
+                    var data = response;
                     if (data.status === "success") {
                         Swal.fire({
                             icon: "success",
-                            title: "Enrollment Successful!",
-                            text: "The student has been successfully enrolled.",
+                            title: data.status,
+                            text: data.message,
                             confirmButtonText: "OK"
                         }).then(() => {
-                            window.location.reload(); // Reload the page or redirect
+                            window.location.href = './index.php'; // Reload the page or redirect
                         });
                     } else {
                         Swal.fire({
                             icon: "error",
-                            title: "Enrollment Failed",
+                            title: data.status,
                             text: data.message || "Something went wrong. Please try again.",
                             confirmButtonText: "OK"
                         });

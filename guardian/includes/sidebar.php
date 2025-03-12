@@ -1,36 +1,4 @@
-<nav class="topnav navbar navbar-light">
-    <div class="navBar-Button d-flex align-items-center">
-        <button type="button" class="navbar-toggler text-muted mt-2 p-0 mr-3 collapseSidebar">
-            <i class="fe fe-menu navbar-toggler-icon"></i>
-        </button>
-        <p>Child Development Center Management System</p>
-    </div>
-
-    <ul class="nav position-relative">
-        <li class="nav-item">
-            <section type="button" class="nav-link text-muted my-2 circle-icon" id="chatToggle">
-                <span class="fe fe-message-circle fe-16"></span>
-            </section>
-            <?php include 'chat.php'; ?>
-        </li>
-
-        <li class="nav-item dropdown">
-            <span class="nav-link text-muted pr-0 avatar-icon" href="#" id="navbarDropdownMenuLink" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                <span class="avatar avatar-sm mt-2">
-                    <div class="avatar-img rounded-circle avatar-initials-min text-center position-relative">
-                        <?php echo isset($_SESSION['user_initials']) ? $_SESSION['user_initials'] : 'U'; ?>
-                    </div>
-                </span>
-            </span>
-            <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdownMenuLink">
-                <a class="dropdown-item" href="profile.php"><i class="fe fe-user"></i>&nbsp;&nbsp;&nbsp;Profile</a>
-                <a class="dropdown-log-out" href="../logout.php"><i class="fe fe-log-out"></i>&nbsp;&nbsp;&nbsp;Log Out</a>
-            </div>    
-        </li>
-    </ul>
-</nav>
-
-<aside class="sidebar-left border-right bg-white" id="leftSidebar" data-simplebar>
+<aside class="sidebar-left border-right bg-white " id="leftSidebar" data-simplebar>
     <a href="#" class="btn collapseSidebar toggle-btn d-lg-none text-muted ml-2 mt-3" data-toggle="toggle">
         <i class="fe fe-x"><span class="sr-only"></span></i>
     </a>
@@ -47,10 +15,10 @@
             </a>
         </div>
 
-        <!--Sidebar-->
-        <ul class="navbar-nav flex-fill w-100 mb-2 <?php echo isActivePage('announcement.php') ? 'active' : ''; ?>">
+        <!--Sidebar ito-->
+        <ul class="navbar-nav flex-fill w-100 mb-2">
             <li class="nav-item dropdown">
-                <a class="nav-link" href="announcement.php">
+                <a class="nav-link" href="./dashboard.php">
                     <i class="fas fa-chart-line"></i>
                     <span class="ml-3 item-text">Dashboard</span>
                 </a>
@@ -61,37 +29,37 @@
             <span style="font-size: 10.5px; font-weight: bold; font-family: 'Inter', sans-serif;">MAIN COMPONENTS</span>
         </p>
 
-        <ul class="navbar-nav flex-fill w-100 mb-2">
-            <ul class="navbar-nav flex-fill w-100 mb-2 <?php echo isActivePage('attendance.php') ? 'active' : ''; ?>">
+        <ul class="navbar-nav flex-fill w-100 mb-2 " id="studentManagement">
+            <ul class="navbar-nav flex-fill w-100 mb-2">
                 <li class="nav-item w-100">
-                    <a class="nav-link" href="attendance.php">
-                        <i class="fa-solid fa-clipboard-user"></i>
+                    <a class="nav-link" href="./attendance.php">
+                    <i class="fa-solid fa-clipboard-user"></i>
                         <span class="ml-3 item-text">Attendance</span>
                     </a>
                 </li>
             </ul>
 
-            <ul class="navbar-nav flex-fill w-100 mb-2 <?php echo isActivePage('grades.php') ? 'active' : ''; ?>">
+            <ul class="navbar-nav flex-fill w-100 mb-2">
                 <li class="nav-item w-100">
-                    <a class="nav-link" href="grades.php">
+                    <a class="nav-link" href="./grades.php">
                         <i class="fa-solid fa-newspaper"></i>
                         <span class="ml-3 item-text">Grades</span>
                     </a>
                 </li>
             </ul>
 
-            <ul class="navbar-nav flex-fill w-100 mb-2 <?php echo isActivePage('requirements.php') ? 'active' : ''; ?>">
+            <ul class="navbar-nav flex-fill w-100 mb-2">
                 <li class="nav-item w-100">
-                    <a class="nav-link" href="requirements.php">
+                    <a class="nav-link" href="./requirements.php">
                         <i class="fa-solid fa-clipboard-check"></i>
                         <span class="ml-3 item-text">Requirements</span>
                     </a>
                 </li>
             </ul>
 
-            <ul class="navbar-nav flex-fill w-100 mb-2 <?php echo isActivePage('teachers_profile.php') ? 'active' : ''; ?>">
+            <ul class="navbar-nav flex-fill w-100 mb-2">
                 <li class="nav-item w-100">
-                    <a class="nav-link" href="teachers_profile.php">
+                    <a class="nav-link" href="./teachers_profile.php">
                         <i class="fa-solid fa-chalkboard-teacher"></i>
                         <span class="ml-3 item-text">Teacher's Profile</span>
                     </a>
@@ -100,8 +68,3 @@
         </ul>
     </nav>
 </aside>
-
-<main role="main" class="main-content">
-    <!-- Page Content Here -->
-    <div class="container-fluid py-3">
-

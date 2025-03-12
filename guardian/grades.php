@@ -1,87 +1,105 @@
 <?php
 session_start();
-$pageTitle = "Grades";
-include '../includes/header.php';
+$pageTitle = "Teacher Dashboard";
+// include '../includes/header.php';
 require_once '../config/database.php';
-require_once '../includes/functions.php';
+// require_once '../includes/functions.php';
 
-if (!isLoggedIn() || !hasRole('guardian')) {
-    header('Location: ../login.php');
-    exit;
-}
+// if (!isLoggedIn() || !hasRole('teacher')) {
+//     header('Location: ../login.php');
+//     exit;
+// }
 
-// Get guardian's student ID
-$guardian_id = $_SESSION['user_id'];
-$stmt = $pdo->prepare("SELECT student_id FROM guardians WHERE user_id = ?");
-$stmt->execute([$guardian_id]);
-$student_id = $stmt->fetchColumn();
+include './includes/header.php';
+?>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<link rel="stylesheet" href="../assets/css/user_navbar.css">
 
-if (!$student_id) {
-    displayAlert("No student found for this guardian", "danger");
-    header('Location: announcement.php');
-    exit;
-}
-
-// Get student's grades
-$stmt = $pdo->prepare("
-    SELECT 
-        s.student_id,
-        CONCAT(s.firstName, ' ', s.lastName) as full_name,
-        e1.evaluation_period as first_eval_period,
-        e1.gross_motor_score + e1.fine_motor_score + e1.self_help_score + 
-        e1.receptive_language_score + e1.expressive_language_score + 
-        e1.cognitive_score + e1.socio_emotional_score as first_eval_ss,
-        e2.evaluation_period as second_eval_period,
-        e2.gross_motor_score + e2.fine_motor_score + e2.self_help_score + 
-        e2.receptive_language_score + e2.expressive_language_score + 
-        e2.cognitive_score + e2.socio_emotional_score as second_eval_ss,
-        r.recommendation
-    FROM students s
-    LEFT JOIN evaluations e1 ON s.id = e1.student_id AND e1.evaluation_period = 'First'
-    LEFT JOIN evaluations e2 ON s.id = e2.student_id AND e2.evaluation_period = 'Second'
-    LEFT JOIN recommendations r ON s.id = r.student_id
-    WHERE s.id = ?
-");
-$stmt->execute([$student_id]);
-$students = $stmt->fetchAll();
-
-include 'includes/sidebar.php';
+<?php 
+include './includes/navbar.php';
+include './includes/sidebar.php';
 ?>
 
-<div class="welcome-section">
-    <h3 class="mb-0">Grades</h3>
-</div>
-
-<div class="container-fluid px-4">
-    <table class="table table-bordered mt-3">
-        <thead>
-            <tr>
-                <th class="bg-primary text-white" scope="col">Student ID</th>
-                <th class="bg-primary text-white" scope="col">Full Name</th>
-                <th class="bg-primary text-white" scope="col">1st Evaluation (SS)</th>
-                <th class="bg-primary text-white" scope="col">2nd Evaluation (SS)</th>
-                <th class="bg-primary text-white" scope="col">Recommendation</th>
-            </tr>
-        </thead>
-        <tbody>
-            <?php foreach ($students as $student): ?>
-                <tr class="text-left">
-                    <td><?php echo $student['student_id']; ?></td>
-                    <td><?php echo $student['full_name']; ?></td>
-                    <td><?php echo $student['first_eval_ss'] ? $student['first_eval_ss'] : '-'; ?></td>
-                    <td><?php echo $student['second_eval_ss'] ? $student['second_eval_ss'] : '-'; ?></td>
-                    <td><?php echo $student['recommendation'] ? $student['recommendation'] : '-'; ?></td>
-                </tr>
-            <?php endforeach; ?>
+<main role="main" class="main-content">
             
-            <?php if (empty($students)): ?>
-                <tr>
-                    <td colspan="5" class="text-center">No student found</td>
-                </tr>
-            <?php endif; ?>
-        </tbody>
-    </table>
-</div>
+    <!--For Notification header naman ito-->
+    <!-- <div class="modal fade modal-notif modal-slide" tabindex="-1" role="dialog" aria-labelledby="defaultModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-sm" role="document">
+        <div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title" id="defaultModalLabel">Notifications</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
 
-<?php include '../includes/footer.php'; ?>
+        <div class="modal-body">
+            <div class="list-group list-group-flush my-n3">
+                <div class="col-12 mb-4">
+                <div class="alert alert-success alert-dismissible fade show" role="alert" id="notification">
+                    <img class="fade show" src="{% static '/images/unified-lgu-logo.png' %}" width="35" height="35">
+                    <strong style="font-size:12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"></strong> 
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close" onclick="removeNotification()">
+                    <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                </div>
+
+            <div id="no-notifications" style="display: none; text-align:center; margin-top:10px;">
+                No notifications
+            </div>
+            </div>
+        </div>
+
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary btn-block" onclick="clearAllNotifications()">Clear All</button>
+        </div>
+        </div>
+    </div>
+    </div> -->
+
+
+    <!-- Page Content Here -->
+    <div class="container-fluid py-3">
+        <!-- Welcome Section -->
+        <div class="welcome-section">
+            <h3 class="mb-0">Grades</h3>
+        </div>
+
+        <div class="container-fluid px-4">
+
+            <table class="table table-bordered mt-3">
+                <thead>
+                    <tr>
+                        <th class="bg-primary text-white" scope="col">Student ID</th>
+                        <th class="bg-primary text-white" scope="col">Full Name</th>
+                        <th class="bg-primary text-white" scope="col">1st Evaluation (SS)</th>
+                        <th class="bg-primary text-white" scope="col">2nd Evaluation (SS)</th>
+                        <th class="bg-primary text-white" scope="col">Recommendation</th>
+                    </tr>
+                </thead>
+                <tbody>
+                        <tr class="text-left">
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td colspan="5" class="text-center">No student found</td>
+                        </tr>
+                </tbody>
+            </table>
+        </div>   
+    </div>
+</main>
+
+<?php
+include './includes/footer.php';
+
+?>
+
+
+
 

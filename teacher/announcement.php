@@ -1,18 +1,110 @@
 <?php
 session_start();
-$pageTitle = "Announcements";
-include '../includes/header.php';
+$pageTitle = "Teacher Dashboard";
+// include '../includes/header.php';
 require_once '../config/database.php';
-require_once '../includes/functions.php';
+// require_once '../includes/functions.php';
 
-if (!isLoggedIn() || !hasRole('teacher')) {
-    header('Location: ../login.php');
-    exit;
-}
+// if (!isLoggedIn() || !hasRole('teacher')) {
+//     header('Location: ../login.php');
+//     exit;
+// }
 
-include 'includes/sidebar.php';
+include './includes/header.php';
+?>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<link rel="stylesheet" href="../assets/css/user_navbar.css">
 
-// Add your announcement management content here
+<?php 
+include './includes/navbar.php';
+include './includes/sidebar.php';
+?>
 
-include '../includes/footer.php';
+<main role="main" class="main-content">
+            
+    <!--For Notification header naman ito-->
+    <!-- <div class="modal fade modal-notif modal-slide" tabindex="-1" role="dialog" aria-labelledby="defaultModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-sm" role="document">
+        <div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title" id="defaultModalLabel">Notifications</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+
+        <div class="modal-body">
+            <div class="list-group list-group-flush my-n3">
+                <div class="col-12 mb-4">
+                <div class="alert alert-success alert-dismissible fade show" role="alert" id="notification">
+                    <img class="fade show" src="{% static '/images/unified-lgu-logo.png' %}" width="35" height="35">
+                    <strong style="font-size:12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"></strong> 
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close" onclick="removeNotification()">
+                    <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                </div>
+
+            <div id="no-notifications" style="display: none; text-align:center; margin-top:10px;">
+                No notifications
+            </div>
+            </div>
+        </div>
+
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary btn-block" onclick="clearAllNotifications()">Clear All</button>
+        </div>
+        </div>
+    </div>
+    </div> -->
+
+
+    <!-- Page Content Here -->
+    <div class="container-fluid py-3">
+        <!-- Welcome Section -->
+        <div class="welcome-section d-flex align-items-center justify-content-between">
+            <h3 class="mb-0">Announcement</h3>
+            <a href="{% url 'add_announcement' %}" class="btn btn-primary btn-sm"><i class="fa-solid fa-plus"></i> Announcement</a>
+        </div>
+
+        <div class="container-fluid px-4">
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped table-sm mt-3">
+                    <thead class="">
+                        <tr class="text-center table-head-columns">
+                            <th class="bg-primary text-white" scope="col">Picture</th>
+                            <th class="bg-primary text-white" scope="col">Title</th>
+                            <th class="bg-primary text-white" scope="col">Date and Time</th>
+                            <th class="bg-primary text-white" scope="col">Description</th>
+                            <th class="bg-primary text-white" scope="col">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                            <tr>
+                                <td>
+                                        <img src="/asEASdwaSEAdWas/{{ announcement.picture}}" alt="{{ announcement.title }}" width="100">
+
+                                </td>
+                                <td> </td>
+                                <td></td>
+                                <td></td>
+                                <td>
+                                    <a href="{% url 'update_announcement' announcement.id %}" class="btn btn-primary btn-sm"><i class="fa-solid fa-edit"></i> Update</a>
+                                    <a href="{% url 'delete_announcement' announcement.id %}" class="btn btn-danger btn-sm"><i class="fa-solid fa-trash"></i> Delete</a>
+                                </td>
+                            </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div> 
+    </div>
+</main>
+
+<?php
+include './includes/footer.php';
+
+?>
+
+
+
 

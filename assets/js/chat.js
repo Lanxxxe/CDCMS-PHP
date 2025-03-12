@@ -7,10 +7,10 @@ document.addEventListener('DOMContentLoaded', async function() {
     const chatBody = document.getElementById('chatBody');
     const typingContainer = document.getElementById('typingContainer');
     
-    const botImageUrl = '/static/images/chat-profile.svg';
+    const botImageUrl = '../assets/images/chat-profile.svg';
     
     // Start Fetching responses
-    const responsesURL = '/static/js/responses.json';
+    const responsesURL = '../assets/js/responses.json';
     let responses;
 
     try {

@@ -1,57 +1,90 @@
 <?php
 session_start();
-$pageTitle = "Teacher's Profile";
-include '../includes/header.php';
+$pageTitle = "Teacher Dashboard";
+// include '../includes/header.php';
 require_once '../config/database.php';
-require_once '../includes/functions.php';
+// require_once '../includes/functions.php';
 
-if (!isLoggedIn() || !hasRole('guardian')) {
-    header('Location: ../login.php');
-    exit;
-}
+// if (!isLoggedIn() || !hasRole('teacher')) {
+//     header('Location: ../login.php');
+//     exit;
+// }
 
-// Get guardian's student ID
-$guardian_id = $_SESSION['user_id'];
-$stmt = $pdo->prepare("SELECT student_id FROM guardians WHERE user_id = ?");
-$stmt->execute([$guardian_id]);
-$student_id = $stmt->fetchColumn();
+include './includes/header.php';
+?>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<link rel="stylesheet" href="../assets/css/user_navbar.css">
 
-if (!$student_id) {
-    displayAlert("No student found for this guardian", "danger");
-    header('Location: announcement.php');
-    exit;
-}
-
-// Get student's teacher information
-// This is a placeholder - in a real application, you would have a proper teacher-student relationship
-$stmt = $pdo->prepare("
-    SELECT t.name, t.contact_number, t.schedule, t.role
-    FROM teachers t
-    JOIN class_assignments ca ON t.id = ca.teacher_id
-    WHERE ca.student_id = ?
-");
-$stmt->execute([$student_id]);
-$teacher = $stmt->fetch();
-
-include 'includes/sidebar.php';
+<?php 
+include './includes/navbar.php';
+include './includes/sidebar.php';
 ?>
 
-<div class="welcome-section">
-    <h3 class="mb-0">Teacher's Profile</h3>
-</div>
+<main role="main" class="main-content">
+            
+    <!--For Notification header naman ito-->
+    <!-- <div class="modal fade modal-notif modal-slide" tabindex="-1" role="dialog" aria-labelledby="defaultModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-sm" role="document">
+        <div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title" id="defaultModalLabel">Notifications</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
 
-<div class="container-fluid px-4">
-    <div class="d-flex align-items-center justify-content-center gap-5">
-        <img class="rounded img-fluid" src="../assets/images/female.jpg" alt="">
-        <div>
-            <h4 class="fw-bold">Adviser</h4>
-            <p class="mb-1">Name: <?php echo $teacher['name'] ?? 'Not assigned'; ?></p>
-            <p class="mb-1">Contact Number: <?php echo $teacher['contact_number'] ?? 'Not available'; ?></p>
-            <p class="mb-1">Schedule: <?php echo $teacher['schedule'] ?? 'Not available'; ?></p>
-            <p class="mb-1">Role: <?php echo $teacher['role'] ?? 'Teacher'; ?></p>
+        <div class="modal-body">
+            <div class="list-group list-group-flush my-n3">
+                <div class="col-12 mb-4">
+                <div class="alert alert-success alert-dismissible fade show" role="alert" id="notification">
+                    <img class="fade show" src="{% static '/images/unified-lgu-logo.png' %}" width="35" height="35">
+                    <strong style="font-size:12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"></strong> 
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close" onclick="removeNotification()">
+                    <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                </div>
+
+            <div id="no-notifications" style="display: none; text-align:center; margin-top:10px;">
+                No notifications
+            </div>
+            </div>
+        </div>
+
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary btn-block" onclick="clearAllNotifications()">Clear All</button>
+        </div>
         </div>
     </div>
-</div>
+    </div> -->
 
-<?php include '../includes/footer.php'; ?>
+
+    <!-- Page Content Here -->
+    <div class="container-fluid py-3">
+        <div class="welcome-section">
+            <h3 class="mb-0">Teacher's Profile</h3>
+        </div>
+
+        <div class="container-fluid px-4">
+            <div class="d-flex align-items-center justify-content-center gap-5">
+                <img class="rounded img-fluid" src="../assets/images/female.jpg" alt="">
+                <div>
+                    <h4 class="fw-bold">Adviser</h4>
+                    <p class="mb-1">Name:</p>
+                    <p class="mb-1">Contact Number:</p>
+                    <p class="mb-1">Schedule:</p>
+                    <p class="mb-1">Role:</p>
+                </div>
+            </div>
+        </div>  
+    </div>
+</main>
+
+<?php
+include './includes/footer.php';
+
+?>
+
+
+
 

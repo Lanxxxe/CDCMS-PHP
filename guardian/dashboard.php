@@ -62,49 +62,21 @@ include './includes/sidebar.php';
     <!-- Page Content Here -->
     <div class="container-fluid py-3">
         <!-- Welcome Section -->
-        <div class="welcome-section">
-            <h3 class="mb-0">Attendance</h3>
+        <div class="welcome-section mb-5">
+            <h3 class="mb-0">Announcement</h3>
         </div>
 
         <div class="container-fluid px-4">
-            <!-- Date Picker -->
-            <div class="d-flex align-items-center justify-content-start gap-2 mt-3">
-                <label for="attendance-date" style="margin-right: 8px;">Select Date:</label>
-                <input type="date" id="attendance-date" class="form-control w-25" value="{{ selected_date }}">
-            </div>
-
-            <div class="table-responsive">
-                <table class="table table-bordered table-striped table-sm mt-3">
-                    <thead>
-                        <tr>
-                            <th class="bg-primary text-white" scope="col">Student ID</th>
-                            <th class="bg-primary text-white" scope="col">Name</th>
-                            <th class="bg-primary text-white" scope="col">Status</th>
-                            <th class="bg-primary text-white" scope="col">Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td>
-                                <button class="btn btn-success change-attendance"
-                                        data-student=""
-                                        data-status="Present">
-                                    Present
-                                </button>
-                                <button class="btn btn-danger change-attendance"
-                                        data-student=""
-                                        data-status="Absent">
-                                    Absent
-                                </button>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+        <div class="card mb-3 p-5 d-flex align-items-center flex-column justify-content-center">
+            <img class="card-img-top mx-auto img-fluid rounded" style="max-height: 500px; max-width: 500px; object-fit:contain;"  src="/asEASdwaSEAdWas/{{ announcement.picture}}" alt="{{ announcement.title }}">
+            <div class="card-body mt-2 w-75">
+                <h5 class="card-title"></h5>
+                <p class="card-text"></p>
+                <p class="card-text"><small class="text-body-secondary"></small></p>
             </div>
         </div>
+            
+        </div>    
     </div>
 </main>
 
