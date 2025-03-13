@@ -22,17 +22,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Validate input
         $title = trim($_POST['title']);
         $description = trim($_POST['description']);
-        $posted_by = trim($_POST['posted_by']);
+        $posted_by = 'Teacher Theres';
+        // $posted_by = trim($_POST['posted_by']);
         
         // Basic validation
         if (empty($title) || empty($description) || empty($posted_by)) {
-            throw new Exception("Title, description, and posted by are required");
+            throw new Exception("Title and description are required");
         }
         
         // Handle file upload
         $picture = '';
         if (isset($_FILES['picture']) && $_FILES['picture']['error'] === UPLOAD_ERR_OK) {
-            $uploadDir = 'uploads/announcements/';
+            $uploadDir = '../uploads/announcements/';
             
             // Create directory if it doesn't exist
             if (!file_exists($uploadDir)) {
@@ -163,10 +164,10 @@ include './includes/sidebar.php';
                                     <input type="text" class="form-control" id="title" name="title" required>
                                 </div>
                                 
-                                <div class="mb-3">
+                                <!-- <div class="mb-3">
                                     <label for="posted_by" class="form-label">Posted By:</label>
                                     <input type="text" class="form-control" id="posted_by" name="posted_by" required>
-                                </div>
+                                </div> -->
                                 
                                 <div class="mb-3">
                                     <label for="description" class="form-label">Description:</label>
