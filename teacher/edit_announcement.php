@@ -207,6 +207,7 @@ include './includes/sidebar.php';
 
 
 <script>
+    document.querySelector('#guardian_management').classList.add("active");
     // Image preview
     document.getElementById('picture').addEventListener('change', function(e) {
         const preview = document.getElementById('imagePreview');

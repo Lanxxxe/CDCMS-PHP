@@ -479,10 +479,14 @@ include './includes/sidebar.php';
             icon: '<?php echo $messageType; ?>',
             confirmButtonText: 'OK',
             confirmButtonColor: '<?php echo $messageType === "success" ? "#28a745" : "#dc3545"; ?>'
+        }).then(() => {
+            window.location.href = 'grades.php';
         });
     });
-    <?php endif; ?>
+    <?php unset($messageType); endif; ?>
+    document.querySelector('#grades').classList.add("active");
 </script>
+
 
 <?php
 include './includes/footer.php';

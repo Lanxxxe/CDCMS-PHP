@@ -205,6 +205,7 @@ include './includes/sidebar.php';
 <?php if ($showAlert): ?>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+
             Swal.fire({
                 title: <?php echo json_encode($messageType === "success" ? "Success!" : "Error!"); ?>,
                 text: <?php echo json_encode($message); ?>,
@@ -219,6 +220,13 @@ include './includes/sidebar.php';
         });
     </script>
     <?php endif; ?>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelector('#guardian_management').classList.add("active");
+
+    })
+</script>
 <?php
 include './includes/footer.php';
 

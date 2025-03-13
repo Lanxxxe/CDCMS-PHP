@@ -314,7 +314,7 @@ include './includes/sidebar.php';
                             <form method="POST" enctype="multipart/form-data">
                                 <div class="modal-header">
                                     <h5 class="modal-title" id="addModalLabel<?php echo $key; ?>">Add <?php echo htmlspecialchars($value['name']); ?></h5>
-                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"><i class="fa-solid fa-x"></i></button>
                                 </div>
                                 <div class="modal-body">
                                     <div class="mb-3">
@@ -341,7 +341,7 @@ include './includes/sidebar.php';
                             <form method="POST" enctype="multipart/form-data">
                                 <div class="modal-header">
                                     <h5 class="modal-title" id="updateModalLabel<?php echo $key; ?>">Update <?php echo htmlspecialchars($value['name']); ?></h5>
-                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"><i class="fa-solid fa-x"></i></button>
                                 </div>
                                 <div class="modal-body">
                                     <div class="mb-3">
@@ -401,9 +401,13 @@ include './includes/sidebar.php';
             text: '<?php echo addslashes($successMessage); ?>',
             icon: 'success',
             confirmButtonText: 'OK'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = window.location.pathname; // Reload page without message
+            }
         });
     });
-    <?php endif; ?>
+    <?php unset($successMessage); endif; ?>
     
     <?php if (isset($errorMessage)): ?>
     document.addEventListener('DOMContentLoaded', function() {
@@ -412,9 +416,13 @@ include './includes/sidebar.php';
             text: '<?php echo addslashes($errorMessage); ?>',
             icon: 'error',
             confirmButtonText: 'OK'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = window.location.pathname; // Reload page without message
+            }
         });
     });
-    <?php endif; ?>
+    <?php unset($errorMessage); endif; ?>
 </script>
 
 <?php

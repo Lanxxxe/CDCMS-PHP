@@ -280,6 +280,10 @@ include './includes/sidebar.php';
     </div>
 </main>
 
+<script>
+    document.querySelector('#grades').classList.add("active");
+</script>
+
 <?php
 include './includes/footer.php';
 
