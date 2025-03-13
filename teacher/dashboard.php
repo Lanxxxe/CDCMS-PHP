@@ -38,10 +38,12 @@ try {
 
     // Fetch attendance summary
     $stmt = $pdo->prepare("SELECT 
-        SUM(CASE WHEN attendance_status = 'present' THEN 1 ELSE 0 END) AS present_count,
-        SUM(CASE WHEN attendance_status = 'absent' THEN 1 ELSE 0 END) AS absent_count,
+        SUM(CASE WHEN status = 'Present' THEN 1 ELSE 0 END) AS present_count,
+        SUM(CASE WHEN status = 'Absent' THEN 1 ELSE 0 END) AS absent_count,
         COUNT(*) AS total_students
-    FROM attendance");
+    FROM attendance
+    WHERE DATE(date) = CURDATE()
+    ");
     $stmt->execute();
     $attendance_summary = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -65,42 +67,7 @@ include './includes/sidebar.php';
 
 <main role="main" class="main-content">
             
-    <!--For Notification header naman ito-->
-    <div class="modal fade modal-notif modal-slide" tabindex="-1" role="dialog" aria-labelledby="defaultModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-sm" role="document">
-            <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="defaultModalLabel">Notifications</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-
-            <div class="modal-body">
-                <div class="list-group list-group-flush my-n3">
-                    <div class="col-12 mb-4">
-                    <div class="alert alert-success alert-dismissible fade show" role="alert" id="notification">
-                        <img class="fade show" src="../assets/images/unified-lgu-logo.png" width="35" height="35">
-                        <strong style="font-size:12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"></strong> 
-                        <button type="button" class="close" data-dismiss="alert" aria-label="Close" onclick="removeNotification()">
-                        <span aria-hidden="true">&times;</span>
-                        </button>
-                    </div>
-                    </div>
-
-                <div id="no-notifications" style="display: none; text-align:center; margin-top:10px;">
-                    No notifications
-                </div>
-                </div>
-            </div>
-
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary btn-block" onclick="clearAllNotifications()">Clear All</button>
-            </div>
-            </div>
-        </div>
-    </div>
-
+    <?php include_once './includes/notification.php' ?> 
 
     <!-- Page Content Here -->
     <div class="container-fluid py-3">
@@ -158,7 +125,7 @@ include './includes/sidebar.php';
 
                                 <div>
                                     <h6>Attendance Summay</h6>
-                                    <div id="attendanceSummary" data-present="<?php echo $attendance_summary['present_count'] ?>" data-absent="<?php echo $attendance_summary['present_count'] ?>" data-total="<?php echo $attendance_summary['total_students'] ?>"></div>
+                                    <div id="attendanceSummary" data-present="<?php echo $attendance_summary['present_count'] ?>" data-absent="<?php echo $attendance_summary['absent_count'] ?>" data-total="<?php echo $attendance_summary['total_students'] ?>"></div>
                                 </div>
                             </div>
                         </div>

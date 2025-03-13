@@ -1,14 +1,14 @@
 <?php
 session_start();
-// Enrollment page
-$pageTitle = "Enrollment";
-include './includes/header.php';
 require_once './config/database.php';
+$pageTitle = "Enrollment";
+// Enrollment page
 require_once './includes/functions.php';
+include './includes/header.php';
 
 ?>
 
-    <div class="d-flex justify-content-center align-items-center bg-primary gap-4 py-3">
+    <div class="d-flex justify-content-center align-items-center gap-4 py-3" style="background-color: #2A5A7F;">
         <a href="index.php">
             <img src="./assets/images/cropMainCDC.png" class="enroll-header-img" width="125" height="125" alt="cdc">
         </a>
@@ -251,144 +251,201 @@ require_once './includes/functions.php';
 </div>
 
 <script>
-    $(document).ready(function () {
-        $("#enrollmentForm").submit(function (e) {
-            e.preventDefault(); // Prevent the default form submission
 
-            var formData = new FormData(this);
+    document.addEventListener("DOMContentLoaded", () => {
+        // Get the enrollment form
+        const enrollmentForm = document.getElementById("enrollmentForm")
 
-            $.ajax({
-                url: "./enrollment_process/database_process.php",
-                type: "POST",
-                data: formData,
-                processData: false,
-                contentType: false,
-                success: function (response) {
-                    console.log(response);
-                    var data = response;
-                    if (data.status === "success") {
-                        Swal.fire({
-                            icon: "success",
-                            title: data.status,
-                            text: data.message,
-                            confirmButtonText: "OK",
-                            confirmButtonColor: '<?php echo $messageType === "success" ? "#28a745" : "#dc3545"; ?>'
-                        }).then(() => {
-                            window.location.href = './index.php'; // Reload the page or redirect
-                        });
-                    } else {
-                        Swal.fire({
-                            icon: "error",
-                            title: data.status,
-                            text: data.message || "Something went wrong. Please try again.",
-                            confirmButtonText: "OK"
-                        });
-                    }
-                },
-                error: function () {
-                    Swal.fire({
-                        icon: "error",
-                        title: "Error",
-                        text: "Unable to process the request. Please check your connection.",
-                        confirmButtonText: "OK"
-                    });
-                }
-            });
-        });
-    });
+        // Add submit event listener to the form
+        enrollmentForm.addEventListener("submit", function (e) {
+        e.preventDefault() // Prevent default form submission
 
-    document.addEventListener('DOMContentLoaded', function() {
-        const guardianTypeRadios = document.querySelectorAll('input[name="guardian_type"]');
-        const bDayInput = document.getElementById("bDay");
-        const ageInput = document.getElementById("age");
-        const municipality = document.getElementById("municipality");
+        // Create FormData object from the form
+        const formData = new FormData(this)
+
+        // Show loading state
+        Swal.fire({
+            title: "Submitting...",
+            text: "Please wait while we process your enrollment.",
+            allowOutsideClick: false,
+            didOpen: () => {
+            Swal.showLoading()
+            },
+        })
+
+        // Submit the form using fetch API
+        fetch("./enrollment_process/database_process.php", {
+            method: "POST",
+            body: formData,
+        })
+            .then((response) => {
+            // Check if the response is ok
+            if (!response.ok) {
+                throw new Error("Network response was not ok")
+            }
+            return response.json()
+            })
+            .then((data) => {
+            // Handle successful response
+            if (data.status === "success") {
+                Swal.fire({
+                icon: "success",
+                title: "Success",
+                text: data.message || "Enrollment submitted successfully!",
+                confirmButtonText: "OK",
+                confirmButtonColor: "#28a745",
+                }).then(() => {
+                // Redirect to index.php after clicking OK
+                window.location.href = "./index.php"
+                })
+            } else {
+                // Handle error response from server
+                Swal.fire({
+                icon: "error",
+                title: "Error",
+                text: data.message || "Something went wrong. Please try again.",
+                confirmButtonText: "OK",
+                confirmButtonColor: "#dc3545",
+                })
+            }
+            })
+            .catch((error) => {
+            // Handle network errors or JSON parsing errors
+            console.error("Error:", error)
+            Swal.fire({
+                icon: "error",
+                title: "Error",
+                text: "Unable to process the request. Please check your connection.",
+                confirmButtonText: "OK",
+                confirmButtonColor: "#dc3545",
+            })
+            })
+        })
+
+
+        const guardianTypeRadios = document.querySelectorAll('input[name="guardian_type"]')
+        const bDayInput = document.getElementById("bDay")
+        const ageInput = document.getElementById("age")
+        const municipality = document.getElementById("municipality")
 
         const guardianFields = {
-            'LName': document.getElementById('guardianLName'),
-            'FName': document.getElementById('guardianFName'),
-            'MName': document.getElementById('guardianMName'),
-            'ContactNo': document.getElementById('guardianContactNo')
-        };
+            LName: document.getElementById("guardianLName"),
+            FName: document.getElementById("guardianFName"),
+            MName: document.getElementById("guardianMName"),
+            ContactNo: document.getElementById("guardianContactNo"),
+        }
         const fatherFields = {
-            'LName': document.getElementById('fatherLName'),
-            'FName': document.getElementById('fatherFName'),
-            'MName': document.getElementById('fatherMName'),
-            'ContactNo': document.getElementById('fatherContactNo')
-        };
+            LName: document.getElementById("fatherLName"),
+            FName: document.getElementById("fatherFName"),
+            MName: document.getElementById("fatherMName"),
+            ContactNo: document.getElementById("fatherContactNo"),
+        }
         const motherFields = {
-            'LName': document.getElementById('motherLName'),
-            'FName': document.getElementById('motherFName'),
-            'MName': document.getElementById('motherMName'),
-            'ContactNo': document.getElementById('motherContactNo')
-        };
-    
+            LName: document.getElementById("motherLName"),
+            FName: document.getElementById("motherFName"),
+            MName: document.getElementById("motherMName"),
+            ContactNo: document.getElementById("motherContactNo"),
+        }
+
         function updateGuardianFields(guardianType) {
-            let sourceFields = guardianType === 'father' ? fatherFields :
-                               guardianType === 'mother' ? motherFields : null;
-    
-            for (let field in guardianFields) {
-                if (sourceFields) {
-                    guardianFields[field].value = sourceFields[field].value;
-                    guardianFields[field].readOnly = true;
-                } else {
-                    guardianFields[field].value = '';
-                    guardianFields[field].readOnly = false;
-                }
-            }
-    
-            // Update relationship field
-            const relationshipField = document.getElementById('guardianRelationship');
-            if (guardianType === 'father' || guardianType === 'mother') {
-                relationshipField.value = 'Parent';
-                relationshipField.readOnly = true;
+            console.log("Guardian type changed to:", guardianType)
+
+            const sourceFields = guardianType === "father" ? fatherFields : guardianType === "mother" ? motherFields : null
+
+            for (const field in guardianFields) {
+            if (sourceFields && sourceFields[field]) {
+                guardianFields[field].value = sourceFields[field].value || ""
+                guardianFields[field].readOnly = guardianType === "father" || guardianType === "mother"
             } else {
-                relationshipField.value = '';
-                relationshipField.readOnly = false;
+                guardianFields[field].value = ""
+                guardianFields[field].readOnly = false
+            }
+            }
+
+            // Update relationship field
+            const relationshipField = document.getElementById("guardianRelationship")
+            if (relationshipField) {
+            if (guardianType === "father") {
+                relationshipField.value = "Father"
+                relationshipField.readOnly = true
+            } else if (guardianType === "mother") {
+                relationshipField.value = "Mother"
+                relationshipField.readOnly = true
+            } else {
+                relationshipField.value = ""
+                relationshipField.readOnly = false
+            }
             }
         }
-    
-        guardianTypeRadios.forEach(radio => {
-            radio.addEventListener('change', function() {
-                updateGuardianFields(this.value);
-            });
-        });
-    
+
+        // Add event listeners to parent fields to update guardian fields if already selected
+        function addParentFieldListeners(parentFields, guardianType) {
+            for (const field in parentFields) {
+            if (parentFields[field]) {
+                parentFields[field].addEventListener("input", () => {
+                const selectedGuardian = document.querySelector('input[name="guardian_type"]:checked')
+                if (selectedGuardian && selectedGuardian.value === guardianType) {
+                    updateGuardianFields(guardianType)
+                }
+                })
+            }
+            }
+        }
+
+        // Add listeners to parent fields
+        addParentFieldListeners(fatherFields, "father")
+        addParentFieldListeners(motherFields, "mother")
+
+        // Add change event to radio buttons
+        guardianTypeRadios.forEach((radio) => {
+            radio.addEventListener("change", function () {
+            console.log("Radio changed:", this.value)
+            updateGuardianFields(this.value)
+            })
+        })
+
         // Initial update based on the default selection
-        updateGuardianFields(document.querySelector('input[name="guardian_type"]:checked').value);
-        
+        const initialGuardianType = document.querySelector('input[name="guardian_type"]:checked')
+        if (initialGuardianType) {
+            console.log("Initial guardian type:", initialGuardianType.value)
+            updateGuardianFields(initialGuardianType.value)
+        } else {
+            console.log("No guardian type selected initially")
+        }
+
         // Validate contact numbers to only allow numbers
-        const validateContactNumber = function() {
-            this.value = this.value.replace(/[^0-9]/g, "");
-        };
-        
-        document.getElementById('motherContactNo').addEventListener('input', validateContactNumber);
-        document.getElementById('guardianContactNo').addEventListener('input', validateContactNumber);
-        document.getElementById('fatherContactNo').addEventListener('input', validateContactNumber);
-        
+        const validateContactNumber = function () {
+            this.value = this.value.replace(/[^0-9]/g, "")
+        }
+
+        document.getElementById("motherContactNo").addEventListener("input", validateContactNumber)
+        document.getElementById("guardianContactNo").addEventListener("input", validateContactNumber)
+        document.getElementById("fatherContactNo").addEventListener("input", validateContactNumber)
+
         // Calculate age based on birthdate
-        bDayInput.addEventListener("change", function() {
-            const bDay = new Date(this.value);
-            const today = new Date();
-            let age = today.getFullYear() - bDay.getFullYear();
-            const monthDiff = today.getMonth() - bDay.getMonth();
+        bDayInput.addEventListener("change", function () {
+            const bDay = new Date(this.value)
+            const today = new Date()
+            let age = today.getFullYear() - bDay.getFullYear()
+            const monthDiff = today.getMonth() - bDay.getMonth()
 
             if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < bDay.getDate())) {
-                age--;
+            age--
             }
 
             if (age >= 3 && age <= 5) {
-                ageInput.value = age;
+            ageInput.value = age
             } else {
-                alert("Age should be 3 or 5 years old.");
-                bDayInput.value = "";
-                ageInput.value = "";
+            alert("Age should be 3 or 5 years old.")
+            bDayInput.value = ""
+            ageInput.value = ""
             }
-        });
+        })
 
         // Set default municipality
-        municipality.value = "Quezon City";
-        municipality.readOnly = true;
-    });
+        municipality.value = "Quezon City"
+        municipality.readOnly = true
+    })
 </script>
 
 <?php include 'includes/footer.php'; ?>

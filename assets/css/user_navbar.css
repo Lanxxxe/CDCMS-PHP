@@ -10,7 +10,7 @@ body {
   min-height: 100vh;
   background-color: var(--light-bg);
 }
-
+ 
 .main-content {
   margin-left: 250px;
   transition: all 0.3s;

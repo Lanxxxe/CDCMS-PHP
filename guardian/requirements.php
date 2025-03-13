@@ -4,23 +4,53 @@ $pageTitle = "Teacher Dashboard";
 // include '../includes/header.php';
 require_once '../config/database.php';
 
-$studentId = (int)$_GET['student_id'];
+// Change from student_id to guardian name parameters
+// $guardianFirstName = isset($_POST['guardian_firstname']) ? strtolower(trim($_POST['guardian_firstname'])) : '';
+// $guardianMiddleName = isset($_POST['guardian_middlename']) ? strtolower(trim($_POST['guardian_middlename'])) : '';
+// $guardianLastName = isset($_POST['guardian_lastname']) ? strtolower(trim($_POST['guardian_lastname'])) : '';
 
-// Get student information
+$guardianFirstName ='Johnpaul';
+$guardianMiddleName = 'Araceli';
+$guardianLastName = 'Daniel';
+
+// Check if search form was submitted
+if (empty($guardianFirstName) && empty($guardianMiddleName) && empty($guardianLastName)) {
+    // Display search form if no search parameters provided
+    include 'guardian_search_form.php'; // You'll need to create this form
+    exit;
+}
+
+// Get student information based on guardian information
 $query = "SELECT s.id, s.student_id as student_number, 
           CONCAT(s.firstname, ' ', IFNULL(s.middlename, ''), ' ', s.lastname, ' ', IFNULL(s.suffix, '')) AS full_name,
+          s.firstname, s.lastname,
           e.psa, e.immunizationcard, e.recentphoto, e.guardianqcid
           FROM student s
           JOIN enrollment e ON s.id = e.student_id
-          WHERE s.id = :id";
+          JOIN guardian_info g ON s.id = g.student_id
+          WHERE LOWER(g.firstname) LIKE :firstname
+          AND (LOWER(g.middlename) LIKE :middlename OR (g.middlename IS NULL AND :middlename = ''))
+          AND LOWER(g.lastname) LIKE :lastname
+          LIMIT 1";
+
 $stmt = $pdo->prepare($query);
-$stmt->bindParam(':id', $studentId, PDO::PARAM_INT);
+
+// Add wildcards for partial matching
+$firstNameParam = "%$guardianFirstName%";
+$middleNameParam = empty($guardianMiddleName) ? '' : "%$guardianMiddleName%";
+$lastNameParam = "%$guardianLastName%";
+
+$stmt->bindParam(':firstname', $firstNameParam, PDO::PARAM_STR);
+$stmt->bindParam(':middlename', $middleNameParam, PDO::PARAM_STR);
+$stmt->bindParam(':lastname', $lastNameParam, PDO::PARAM_STR);
 $stmt->execute();
 $student = $stmt->fetch();
 
 // If student not found, show error
 if (!$student) {
-    die("Student not found");
+    echo "<div class='alert alert-danger'>No student found with the specified guardian information.</div>";
+    include 'guardian_search_form.php'; // You'll need to create this form
+    exit;
 }
 
 // Define requirements
@@ -46,6 +76,9 @@ $requirements = [
         'deletable' => false
     ]
 ];
+
+// Store student ID for use in the rest of the code
+$studentId = $student['id'];
 
 // Process form submission for adding/updating requirements
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && isset($_POST['requirement'])) {
@@ -75,18 +108,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && isset($_
                 throw new Exception("Only JPEG, PNG, GIF images and PDF files are allowed");
             }
             
-            // Generate unique filename
-            $extension = pathinfo($_FILES['requirement_file']['name'], PATHINFO_EXTENSION);
-            $newFilename = $requirement . '_' . $studentId . '_' . time() . '.' . $extension;
-            $uploadDir = 'uploads/requirements/';
-            
-            // Create directory if it doesn't exist
-            if (!file_exists($uploadDir)) {
-                mkdir($uploadDir, 0777, true);
+            // Handle file uploads
+            $upload_dir = '../enrollment_process/uploads/files/';
+
+
+            // Ensure base directory exists
+            if (!is_dir($upload_dir)) {
+                mkdir($upload_dir, 0777, true);
             }
+
+            // Generate unique filename
+            $student_name = strtolower($student['firstname']) . '_' . strtolower($student['lastname']);
+            $extension = pathinfo($_FILES['requirement_file']['name'], PATHINFO_EXTENSION);
+            $newFilename = $student_name . '_' . $requirement . '.' . $extension;
+
+            // Create student-specific directory
+            $userDir = $upload_dir . $student_name . '/' . $requirement . '/';
             
-            $uploadPath = $uploadDir . $newFilename;
-            
+            if (!is_dir($userDir)) {
+                if (!mkdir($userDir, 0777, true) && !is_dir($userDir)) {
+                    throw new Exception("Failed to create directory: $userDir");
+                }
+            }
+
+            // Full file path
+            $uploadPath = $userDir . $newFilename;
+
             // Move uploaded file
             if (!move_uploaded_file($_FILES['requirement_file']['tmp_name'], $uploadPath)) {
                 throw new Exception("Failed to upload file");
@@ -95,7 +142,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && isset($_
             // Update enrollment record
             $query = "UPDATE enrollment SET $requirement = :file_path WHERE student_id = :student_id";
             $stmt = $pdo->prepare($query);
-            $stmt->bindParam(':file_path', $newFilename);
+            $stmt->bindParam(':file_path', $uploadPath);
             $stmt->bindParam(':student_id', $studentId, PDO::PARAM_INT);
             $stmt->execute();
             
@@ -109,7 +156,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && isset($_
             $stmt->bindParam(':name', $notificationName);
             $stmt->bindParam(':action', $action);
             $stmt->bindParam(':content', $notificationContent);
-            $stmt->bindParam(':file_path', $newFilename);
+            $stmt->bindParam(':file_path', $uploadPath);
             $stmt->execute();
             
             // Commit transaction
@@ -124,7 +171,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && isset($_
             
             if (!empty($currentFile)) {
                 // Delete file if it exists
-                $filePath = 'uploads/requirements/' . $currentFile;
+                $filePath = '../enrollment_process/' . $currentFile;
                 if (file_exists($filePath)) {
                     unlink($filePath);
                 }
@@ -161,7 +208,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && isset($_
             throw new Exception("Invalid action");
         }
         
-        // Refresh student data
+        // Refresh student data after changes
+        $query = "SELECT s.id, s.student_id as student_number, 
+                  CONCAT(s.firstname, ' ', IFNULL(s.middlename, ''), ' ', s.lastname, ' ', IFNULL(s.suffix, '')) AS full_name,
+                  e.psa, e.immunizationcard, e.recentphoto, e.guardianqcid
+                  FROM student s
+                  JOIN enrollment e ON s.id = e.student_id
+                  WHERE s.id = :id";
         $stmt = $pdo->prepare($query);
         $stmt->bindParam(':id', $studentId, PDO::PARAM_INT);
         $stmt->execute();
@@ -179,16 +232,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && isset($_
     }
 }
 
-// Function to check if file exists
-function fileExists($filename) {
-    if (empty($filename)) return false;
-    return file_exists('uploads/requirements/' . $filename);
-}
-
 // Function to get file URL
 function getFileUrl($filename) {
     if (empty($filename)) return '';
-    return 'uploads/requirements/' . $filename;
+    return '../enrollment_process/' . $filename;
 }
 
 // Function to get file extension
@@ -216,43 +263,6 @@ include './includes/sidebar.php';
 ?>
 
 <main role="main" class="main-content">
-            
-    <!--For Notification header naman ito-->
-    <!-- <div class="modal fade modal-notif modal-slide" tabindex="-1" role="dialog" aria-labelledby="defaultModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-sm" role="document">
-        <div class="modal-content">
-        <div class="modal-header">
-            <h5 class="modal-title" id="defaultModalLabel">Notifications</h5>
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-            </button>
-        </div>
-
-        <div class="modal-body">
-            <div class="list-group list-group-flush my-n3">
-                <div class="col-12 mb-4">
-                <div class="alert alert-success alert-dismissible fade show" role="alert" id="notification">
-                    <img class="fade show" src="{% static '/images/unified-lgu-logo.png' %}" width="35" height="35">
-                    <strong style="font-size:12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"></strong> 
-                    <button type="button" class="close" data-dismiss="alert" aria-label="Close" onclick="removeNotification()">
-                    <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                </div>
-
-            <div id="no-notifications" style="display: none; text-align:center; margin-top:10px;">
-                No notifications
-            </div>
-            </div>
-        </div>
-
-        <div class="modal-footer">
-            <button type="button" class="btn btn-secondary btn-block" onclick="clearAllNotifications()">Clear All</button>
-        </div>
-        </div>
-    </div>
-    </div> -->
-
 
     <!-- Page Content Here -->
     <div class="container-fluid py-3">
@@ -264,17 +274,10 @@ include './includes/sidebar.php';
         <div class="container-fluid px-4 mt-3">
             <?php foreach ($requirements as $key => $value): ?>
                 <div class="card mb-4 py-4 d-flex align-items-center justify-content-center flex-column shadow-sm">
-                    <?php if (fileExists($value['file']) && isImage($value['file'])): ?>
+                    <?php if ($value['file'] && isImage($value['file'])): ?>
                         <img src="../enrollment_process/<?php echo getFileUrl($value['file']); ?>" class="card-img-top img-container img-fluid rounded mx-auto" 
                              style="height: 500px; width: 500px; object-fit: contain;" alt="<?php echo htmlspecialchars($value['name']); ?>">
-                    <?php elseif (fileExists($value['file'])): ?>
-                        <div class="d-flex flex-column align-items-center justify-content-center">
-                            <i class="fa-solid fa-file-pdf text-danger" style="font-size: 100px;"></i>
-                            <p class="mt-2">PDF Document</p>
-                            <a href="<?php echo getFileUrl($value['file']); ?>" class="btn btn-primary btn-sm mt-2" target="_blank">
-                                <i class="fa-solid fa-eye"></i> View Document
-                            </a>
-                        </div>
+
                     <?php else: ?>
                         <img src="../assets/images/noDocument.jpg" class="card-img-top img-container img-fluid rounded mx-auto"
                              style="height: 500px; width: 500px; object-fit: contain;" alt="No Document">
@@ -283,7 +286,7 @@ include './includes/sidebar.php';
                     <div class="card-body w-50 mt-3">
                         <div class="d-flex justify-content-between align-items-center">
                             <h5 class="card-title"><?php echo htmlspecialchars($value['name']); ?></h5>
-                            <?php if (fileExists($value['file'])): ?>
+                            <?php if ($value['file']): ?>
                                 <div>
                                     <button type="button" class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#updateModal<?php echo $key; ?>">
                                         <i class="fa-solid fa-edit"></i> Update
@@ -324,7 +327,7 @@ include './includes/sidebar.php';
                                 </div>
                                 <div class="modal-footer">
                                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                    <button type="submit" class="btn btn-success">Upload</button>
+                                    <button type="submit" class="btn btn-primary"><i class="fa-solid fa-save"></i> Save</button>
                                 </div>
                             </form>
                         </div>
@@ -351,7 +354,7 @@ include './includes/sidebar.php';
                                 </div>
                                 <div class="modal-footer">
                                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                    <button type="submit" class="btn btn-warning">Update</button>
+                                    <button type="submit" class="btn btn-primary"><i class="fa-solid fa-save"></i> Save</button>
                                 </div>
                             </form>
                         </div>

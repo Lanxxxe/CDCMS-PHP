@@ -1,16 +1,16 @@
 <?php
-include_once '../includes/functions.php';
-if (!isLoggedIn() || !hasRole('guardian')) {
-    header('Location: ../login.php');
-    exit;
-}
+// include_once '../includes/functions.php';
+// if (!isLoggedIn() || !hasRole('guardian')) {
+//     header('Location: ../login.php');
+//     exit;
+// }
 ?>
 <!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <link rel="icon" href="../../../assets/images/unified-lgu-logo.png">
+    <link rel="icon" href="../assets/images/unified-lgu-logo.png">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.6.0/css/fontawesome.min.css">
     <link rel ="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
     <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
@@ -25,13 +25,12 @@ if (!isLoggedIn() || !hasRole('guardian')) {
     <link rel="stylesheet" href="../assets/css/feather.css">
     <!-- App CSS -->
     <link rel="stylesheet" href="../assets/css/main.css">   
-    <!-- <link rel="stylesheet" href="../../assets/css/bootstrap5.0.1.min.css">    -->
     <!-- Chat CSS -->
     <link rel="stylesheet" href="../assets/css/chat.css">
-    <script src="../../assets/js/chat.js"></script>
+    <script src="../assets/js/chat.js"></script>
+    
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 
-    {% block extra_css %}{% endblock %}
     <style>
       .avatar-initials {
         width: 165px;

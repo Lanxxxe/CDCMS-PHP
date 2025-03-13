@@ -6,7 +6,7 @@
     <nav class="vertnav navbar-side navbar-light">
         <!-- nav bar -->
         <div class="w-100 mb-4 d-flex">
-            <a class="navbar-brand mx-auto mt-2 flex-fill text-center" href="#">   
+            <a class="navbar-brand mx-auto mt-2 flex-fill text-center" href="./../index.php">   
                 <img src="../assets/images/unified-lgu-logo.png" width="45">
                 <div class="brand-title">
                     <br>
