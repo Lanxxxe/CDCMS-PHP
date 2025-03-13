@@ -5,7 +5,7 @@ require_once '../config/database.php';
 
 // Check if ID is provided
 if (!isset($_GET['id']) || empty($_GET['id'])) {
-    header("Location: announcements.php?message=Invalid announcement ID&type=error");
+    header("Location: announcement.php?message=Invalid announcement ID&type=error");
     exit;
 }
 
@@ -37,10 +37,10 @@ try {
     $stmt->bindParam(':id', $announcementId, PDO::PARAM_INT);
     $stmt->execute();
     
-    header("Location: announcements.php?message=Announcement deleted successfully&type=success");
+    header("Location: announcement.php?message=Announcement deleted successfully&type=success");
     exit;
     
 } catch (Exception $e) {
-    header("Location: announcements.php?message=Error: " . urlencode($e->getMessage()) . "&type=error");
+    header("Location: announcement.php?message=Error: " . urlencode($e->getMessage()) . "&type=error");
     exit;
 }

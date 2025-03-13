@@ -247,11 +247,15 @@ include './includes/sidebar.php';
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             Swal.fire({
-                title: '<?php echo $messageType === "success" ? "Success!" : "Error!"; ?>',
-                text: '<?php echo addslashes($message); ?>',
-                icon: '<?php echo $messageType; ?>',
-                confirmButtonText: 'OK',
-                confirmButtonColor: '<?php echo $messageType === "success" ? "#28a745" : "#dc3545"; ?>'
+                title: <?php echo json_encode($messageType === "success" ? "Success!" : "Error!"); ?>,
+                text: <?php echo json_encode($message); ?>,
+                icon: <?php echo json_encode($messageType); ?>,
+                confirmButtonText: "OK",
+                confirmButtonColor: <?php echo json_encode($messageType === "success" ? "#28a745" : "#dc3545"); ?>
+            }).then(() => {
+                // Remove parameters from URL after clicking OK
+                window.history.replaceState(null, null, "./announcement.php");
+                window.location.href = "./announcement.php";
             });
         });
     </script>

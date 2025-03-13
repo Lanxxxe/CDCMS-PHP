@@ -1,5 +1,5 @@
 <nav class="navbar navbar-expand-lg navbar-light justify-content-between">
-    <a class="navbar-brand" href="">
+    <a class="navbar-brand" href="./index.php">
         <div class="d-flex">
             <img src="./assets/images/logo.png" width="50" height="50" class="d-inline-block align-top" alt="logo">
             <p class="cdcms-logo">CDCMS</p>

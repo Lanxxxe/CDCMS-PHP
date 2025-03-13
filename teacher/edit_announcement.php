@@ -19,7 +19,7 @@ $showAlert = false;
 
 // Check if ID is provided
 if (!isset($_GET['id']) || empty($_GET['id'])) {
-    header("Location: announcements.php");
+    header("Location: announcement.php");
     exit;
 }
 
@@ -34,7 +34,7 @@ $announcement = $stmt->fetch();
 
 // If announcement not found, redirect back to list
 if (!$announcement) {
-    header("Location: announcements.php?message=Announcement not found&type=error");
+    header("Location: announcement.php?message=Announcement not found&type=error");
     exit;
 }
 
@@ -118,7 +118,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->execute();
         
         // Redirect to announcements page with success message
-        header("Location: announcements.php?message=Announcement updated successfully&type=success");
+        header("Location: announcement.php?message=Announcement updated successfully&type=success");
         exit;
         
     } catch (Exception $e) {
@@ -187,10 +187,10 @@ include './includes/sidebar.php';
 
         <div class="container-fluid px-4">
             <div class="row">
-                <div class="col-md-8 offset-md-2">
+                <div class="col-md-8 offset-md-2 mx-auto">
                     <div class="card">
                         <div class="card-header bg-primary text-white">
-                            <h4 class="mb-0">Edit Announcement</h4>
+                            <h4 class="mb-0 text-white">Edit Announcement</h4>
                         </div>
                         <div class="card-body">
                             <form method="POST" action="" enctype="multipart/form-data">
@@ -201,7 +201,7 @@ include './includes/sidebar.php';
                                 
                                 <div class="mb-3">
                                     <label for="posted_by" class="form-label">Posted By:</label>
-                                    <input type="text" class="form-control" id="posted_by" name="posted_by" value="<?php echo htmlspecialchars($announcement['posted_by']); ?>" required>
+                                    <input type="text" class="form-control" id="posted_by" name="posted_by" value="<?php echo htmlspecialchars($announcement['posted_by']); ?>" readonly>
                                 </div>
                                 
                                 <div class="mb-3">
@@ -220,7 +220,7 @@ include './includes/sidebar.php';
                                     <div id="currentImage" class="mt-2 <?php echo empty($announcement['picture']) ? 'd-none' : ''; ?>">
                                         <label class="form-label">Current Image:</label>
                                         <div>
-                                            <img src="uploads/announcements/<?php echo htmlspecialchars($announcement['picture']); ?>" 
+                                            <img src="../uploads/announcements/<?php echo htmlspecialchars($announcement['picture']); ?>" 
                                                 alt="Current Image" class="img-thumbnail" style="max-height: 200px;">
                                         </div>
                                     </div>
@@ -234,8 +234,8 @@ include './includes/sidebar.php';
                                 </div>
                                 
                                 <div class="d-flex justify-content-between">
-                                    <a href="announcements.php" class="btn btn-secondary">Back to Announcements</a>
-                                    <button type="submit" class="btn btn-primary">Update Announcement</button>
+                                    <a href="./announcement.php" class="btn btn-secondary">Back to Announcements</a>
+                                    <button type="submit" class="btn btn-primary"><i class="fa-solid fa-save"></i> Update Announcement</button>
                                 </div>
                             </form>
                         </div>

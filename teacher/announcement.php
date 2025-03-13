@@ -96,7 +96,7 @@ include './includes/sidebar.php';
                                     <tr>
                                         <td class="text-center">
                                             <?php if (!empty($announcement['picture'])): ?>
-                                                <img src="uploads/announcements/<?php echo htmlspecialchars($announcement['picture']); ?>" 
+                                                <img src="../uploads/announcements/<?php echo htmlspecialchars($announcement['picture']); ?>" 
                                                     alt="<?php echo htmlspecialchars($announcement['title']); ?>" 
                                                     width="100" class="img-thumbnail">
                                             <?php else: ?>
@@ -162,6 +162,10 @@ include './includes/sidebar.php';
             icon: '<?php echo $messageType; ?>',
             confirmButtonText: 'OK',
             confirmButtonColor: '<?php echo $messageType === "success" ? "#28a745" : "#dc3545"; ?>'
+        }).then(() => {
+                // Remove parameters from URL after clicking OK
+            window.history.replaceState(null, null, "./announcement.php");
+            // window.location.href = "./announcement.php";
         });
     });
     <?php endif; ?>

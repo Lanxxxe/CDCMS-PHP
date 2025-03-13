@@ -48,11 +48,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $fileExt = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
             
             // Allowed file extensions
-            $allowedExts = array('jpg', 'jpeg', 'png', 'gif');
+            $allowedExts = array('jpg', 'jpeg', 'png');
             
             // Validate file
-            if (!in_array($fileExt, $allowedExts)) {
-                throw new Exception("Only JPG, JPEG, PNG & GIF files are allowed");
+            if (!in_array($fileExt, $allowedExts)) { 
+                throw new Exception("Only JPG, JPEG, & PNG files are allowed");
             }
             
             if ($fileSize > 5000000) { // 5MB max
@@ -60,7 +60,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             
             // Generate unique filename
-            $newFileName = uniqid() . '.' . $fileExt;
+            $newFileName = $title . '.' . $fileExt;
             $destination = $uploadDir . $newFileName;
             
             // Move uploaded file
@@ -82,7 +82,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->execute();
         
         // Redirect to announcements page with success message
-        header("Location: announcements.php?message=Announcement added successfully&type=success");
+        header("Location: announcement.php?message=Announcement added successfully&type=success");
         exit;
         
     } catch (Exception $e) {
@@ -150,7 +150,7 @@ include './includes/sidebar.php';
             <!-- <a href="./add_announcement.php" class="btn btn-primary btn-sm"><i class="fa-solid fa-plus"></i> Announcement</a> -->
         </div>
 
-        <div class="container-fluid px-4">
+        <div class="container-fluid px-4 mt-5">
             <div class="row">
                 <div class="col-md-8 offset-md-2 mx-auto">
                     <div class="card">
