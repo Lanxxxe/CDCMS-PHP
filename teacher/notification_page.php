@@ -3,17 +3,6 @@ session_start();
 $pageTitle = "Teacher Dashboard";
 require_once '../config/database.php';
 
-// if (!isLoggedIn() || !hasRole('teacher')) {
-//     header('Location: ../login.php');
-//     exit;
-// }
-
-
-
-
-
-
-
 
 include './includes/header.php';
 ?>

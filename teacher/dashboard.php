@@ -3,12 +3,6 @@ session_start();
 $pageTitle = "Teacher Dashboard";
 require_once '../config/database.php';
 
-// if (!isLoggedIn() || !hasRole('teacher')) {
-//     header('Location: ../login.php');
-//     exit;
-// }
-
-
 try {
     // Fetch total number of guardians
     $stmt = $pdo->prepare("SELECT COUNT(*) AS total_guardians FROM guardian_info");
