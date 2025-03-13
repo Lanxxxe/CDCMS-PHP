@@ -73,17 +73,17 @@ document.addEventListener('DOMContentLoaded', async function() {
             addBotMessage(response);
         }, 1000);
     }
-    
+
     function addUserMessage(message) {
-        const messageHTML = `
-            <div class="chat-widget-flex chat-widget-flex-end chat-widget-margin-bottom">
-                <div class="chat-widget-user-bubble chat-widget-text-break">
-                    ${message}
-                </div>
-            </div>
-        `;
-        
-        chatBody.insertAdjacentHTML('beforeend', messageHTML);
+        const messageContainer = document.createElement("div");
+        messageContainer.className = "chat-widget-flex chat-widget-flex-end chat-widget-margin-bottom";
+
+        const messageBubble = document.createElement("div");
+        messageBubble.className = "chat-widget-user-bubble chat-widget-text-break";
+        messageBubble.textContent = message; // Completely safe, no HTML injection
+
+        messageContainer.appendChild(messageBubble);
+        chatBody.appendChild(messageContainer);
         chatBody.scrollTop = chatBody.scrollHeight;
     }
     

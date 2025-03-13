@@ -1,3 +1,10 @@
+<?php
+// include_once '../includes/functions.php';
+// if (!isLoggedIn() || !hasRole('teacher')) {
+//     header('Location: ../login.php');
+//     exit;
+// }
+?>
 <!DOCTYPE html>
 <html lang="en">
   <head>

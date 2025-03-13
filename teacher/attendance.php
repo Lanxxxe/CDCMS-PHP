@@ -3,12 +3,6 @@ session_start();
 $pageTitle = "Teacher Dashboard";
 // include '../includes/header.php';
 require_once '../config/database.php';
-// require_once '../includes/functions.php';
-
-// if (!isLoggedIn() || !hasRole('teacher')) {
-//     header('Location: ../login.php');
-//     exit;
-// }
 
 // Get selected date (default to today if not specified)
 $selectedDate = isset($_GET['date']) ? $_GET['date'] : date('Y-m-d');
