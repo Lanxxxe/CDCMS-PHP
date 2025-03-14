@@ -30,8 +30,8 @@ $pdo->exec("TRUNCATE TABLE registerlanding");
 
 // ✅ Insert new data into subdomain database
 $sql = "INSERT INTO registerlanding 
-    (id, email, first_name, last_name, session_token, picture_pic, birth_date, sex, mobile, working, occupation, house, street, barangay, city) 
-    VALUES (:id, :email, :first_name, :last_name, :session_token, :picture_pic, :birth_date, :sex, :mobile, :working, :occupation, :house, :street, :barangay, :city)";
+    (id, email, first_name, last_name, session_token, picture_pic, birth_date, sex, mobile, working, occupation, house, street, barangay, city, password) 
+    VALUES (:id, :email, :first_name, :last_name, :session_token, :picture_pic, :birth_date, :sex, :mobile, :working, :occupation, :house, :street, :barangay, :city, :password)";
 
 $stmt = $pdo->prepare($sql);
 
@@ -51,7 +51,8 @@ foreach ($data as $row) {
         ':house' => $row['house'],
         ':street' => $row['street'],
         ':barangay' => $row['barangay'],
-        ':city' => $row['city']
+        ':city' => $row['city'],
+        ':password' => $row['password']
     ]);
 }
 
