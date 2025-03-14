@@ -13,6 +13,8 @@ if (!isset($_GET['email']) || !isset($_GET['session_token'])) {
 
 $email = $_GET['email'];
 $session_token = $_GET['session_token'];
+// $email = 'daveprotacio48@gmail.com';
+// $session_token = '3a1f4ea023c4747d8870060768215d478d1ff256f5fe3a58bbfddfa22d6f4be9';
 
 // ✅ Fetch registerlanding data from Main Domain API
 $api_url = "https://smartbarangayconnect.com/api_get_registerlanding.php";
@@ -24,49 +26,48 @@ if (!$data || !is_array($data)) {
 }
 
 // ✅ Clear old data in subdomain database
-$conn->query("TRUNCATE TABLE registerlanding");
+$pdo->exec("TRUNCATE TABLE registerlanding");
 
-// ✅ Insert new data into subdomain database (Now includes additional fields)
-$stmt = $conn->prepare("INSERT INTO registerlanding 
+// ✅ Insert new data into subdomain database
+$sql = "INSERT INTO registerlanding 
     (id, email, first_name, last_name, session_token, picture_pic, birth_date, sex, mobile, working, occupation, house, street, barangay, city) 
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+    VALUES (:id, :email, :first_name, :last_name, :session_token, :picture_pic, :birth_date, :sex, :mobile, :working, :occupation, :house, :street, :barangay, :city)";
 
-if (!$stmt) {
-    die("❌ Query Preparation Failed: " . $conn->error);
-}
+$stmt = $pdo->prepare($sql);
 
 foreach ($data as $row) {
-    $picture_pic = !empty($row['picture_pic']) ? $row['picture_pic'] : null;
-
-    $stmt->bind_param("issssssssssssss", 
-        $row['id'], $row['email'], $row['first_name'], $row['last_name'], $row['session_token'], $picture_pic,
-        $row['birth_date'], $row['sex'], $row['mobile'], $row['working'], $row['occupation'],
-        $row['house'], $row['street'], $row['barangay'], $row['city']
-    );
-    $stmt->execute();
+    $stmt->execute([
+        ':id' => $row['id'],
+        ':email' => $row['email'],
+        ':first_name' => $row['first_name'],
+        ':last_name' => $row['last_name'],
+        ':session_token' => $row['session_token'],
+        ':picture_pic' => $row['picture_pic'] ?? null,
+        ':birth_date' => $row['birth_date'],
+        ':sex' => $row['sex'],
+        ':mobile' => $row['mobile'],
+        ':working' => $row['working'],
+        ':occupation' => $row['occupation'],
+        ':house' => $row['house'],
+        ':street' => $row['street'],
+        ':barangay' => $row['barangay'],
+        ':city' => $row['city']
+    ]);
 }
 
-// ✅ Verify session token in subdomain database (Now selects all fields)
+
+// ✅ Verify session token in subdomain database
 $sql = "SELECT id, email, first_name, last_name, picture_pic, birth_date, sex, mobile, working, occupation, house, street, barangay, city 
-        FROM registerlanding WHERE email = ? AND session_token = ?";
-$stmt = $conn->prepare($sql);
+        FROM registerlanding WHERE email = :email AND session_token = :session_token";
+$stmt = $pdo->prepare($sql);
+$stmt->execute([':email' => $email, ':session_token' => $session_token]);
 
-if (!$stmt) {
-    die("❌ Query Preparation Failed: " . $conn->error);
-}
+$row = $stmt->fetch();
 
-$stmt->bind_param("ss", $email, $session_token);
-if (!$stmt->execute()) {
-    die("❌ Query Execution Failed: " . $stmt->error);
-}
-
-$result = $stmt->get_result();
-
-if ($result->num_rows === 0) {
+if (!$row) {
     die("❌ Invalid session token or email!");
 }
 
-$row = $result->fetch_assoc();
 
 // ✅ Store all data in session
 $_SESSION['id'] = $row['id'];
@@ -92,6 +93,6 @@ $_SESSION['city'] = $row['city'];
 // exit();
 
 // ✅ Redirect to dashboard
-header("Location: user/dashboard.php");
+header("Location: ./dashboard.php");
 exit();
 ?>
