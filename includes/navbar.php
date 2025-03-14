@@ -7,11 +7,6 @@
     </a>
     <div class="justify-content-end" id="navbarNav">
         <a class="btn btn-sm btn-primary py-2 px-3" href="./enrollment.php">ENROLL NOW</a>
-        
-        <?php if (isLoggedIn()): ?>
-            <a class="btn btn-sm btn-success py-2 px-3" href="./guardian/dashboard.php">DASHBOARD</a>
-        <?php else: ?>
-            <a class="btn btn-sm btn-success py-2 px-3" href="./login.php">LOGIN</a>
-        <?php endif; ?>
+        <a class="btn btn-sm btn-success py-2 px-3" href="./login.php">LOGIN</a>
     </div>
 </nav>
