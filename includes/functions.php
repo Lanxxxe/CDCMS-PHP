@@ -112,8 +112,8 @@ function initializeGuardianUser($email, $password) {
                 ':first_name' => $row['first_name'],
                 ':last_name' => $row['last_name'],
                 ':session_token' => $row['session_token'],
-                ':picture_pic' => $row['picture_pic'] ?? null,
-                ':birth_date' => $row['birth_date'], // Fix column name
+                ':picture_pic' => $row['profile_pic'] ?? null,
+                ':birth_date' => $row['birth_date'],
                 ':sex' => $row['sex'],
                 ':mobile' => $row['mobile'],
                 ':working' => $row['working'],
