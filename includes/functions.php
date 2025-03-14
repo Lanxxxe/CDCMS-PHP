@@ -82,20 +82,7 @@ function initializeGuardianUser($email, $password) {
     try {
         $api_url = "https://smartbarangayconnect.com/api_get_registerlanding.php";
         $response = file_get_contents($api_url);
-
-        if (!$response) {
-            $_SESSION['debug_message'] = "Failed to fetch API data.";
-            header('Location: login.php');
-            exit;
-        }
-
         $data = json_decode($response, true);
-
-        if (!$data) {
-            $_SESSION['debug_message'] = "Error decoding API response.";
-            header('Location: login.php');
-            exit;
-        }
 
         // ✅ Clear old data in subdomain database
         $pdo->exec("TRUNCATE TABLE registerlanding");
@@ -106,10 +93,9 @@ function initializeGuardianUser($email, $password) {
         VALUES (:id, :email, :first_name, :last_name, :session_token, :picture_pic, :birth_date, :sex, :mobile, :working, :occupation, :house, :street, :barangay, :city, :password)";
 
         $stmt = $pdo->prepare($sql);
-        $insertCount = 0;
 
         foreach ($data as $row) {
-            $stmt->execute([
+        $stmt->execute([
                 ':id' => $row['id'],
                 ':email' => $row['email'],
                 ':first_name' => $row['first_name'],
@@ -127,49 +113,41 @@ function initializeGuardianUser($email, $password) {
                 ':city' => $row['city'],
                 ':password' => $row['password']
             ]);
-            $insertCount++;
         }
 
-        $_SESSION['debug_message'] = "Inserted $insertCount records into database.";
-
-        // Check for user credentials
-        $stmt = $pdo->prepare("SELECT id, first_name, last_name, birth_date, email, password FROM registerlanding WHERE email = :email");
+        $stmt = $pdo->prepare("SELECT id, first_name, last_name, birthday, address, email, password FROM registerlanding WHERE email = :email");
         $stmt->bindParam(':email', $email, PDO::PARAM_STR);
         $stmt->execute();
         
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        if (!$row) {
-            $_SESSION['debug_message'] = "No user found with email: $email";
-            header('Location: login.php');
-            exit;
-        }
-
-        if ($password === 'pass') { // Change this to use password_verify if using hashed passwords
+        if (password_verify($password, $row['password'])) {
+        // if ($password === 'pass') {
             $_SESSION['user_id'] = $row['id'];
             $_SESSION['first_name'] = $row['first_name'];
             $_SESSION['last_name'] = $row['last_name'];
             $_SESSION['role'] = 'guardian';
-            $_SESSION['birth_date'] = $row['birth_date'];
+            $_SESSION['birthday'] = $row['birthday'];
             $_SESSION['email'] = $row['email'];
+            $_SESSION['address'] = $row['address'];
 
-            $_SESSION['debug_message'] = "Login successful for user: " . $row['email'];
-            header('Location: index.php');
-            exit;
+            if ($row['role'] === 'teacher') {
+                header('Location: index.php');
+            } else {
+                header('Location: index.php ');
+            }
         } else {
-            $_SESSION['debug_message'] = "Incorrect password for email: $email";
             $_SESSION['login_error'] = 'Invalid email or password!';
             header('Location: login.php');
-            exit;
         }
+        exit;
 
     } catch (PDOException $e) {
-        $_SESSION['debug_message'] = "Database Error: " . $e->getMessage();
+        echo 'Internal Sever Error';
         header('Location: login.php');
         exit;
     }
 }
-
 
 
 // Fallback function that uses the original recommendation logic
