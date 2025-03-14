@@ -42,6 +42,7 @@ function initializeLoginUser($email, $password) {
         if (password_verify($password, $row['password'])) {
             $_SESSION['user_id'] = $row['id'];
             $_SESSION['first_name'] = $row['first_name'];
+            $_SESSION['middle_name'] = $row['middle_name'];
             $_SESSION['last_name'] = $row['last_name'];
             $_SESSION['role'] = $row['role'];
             $_SESSION['birthday'] = $row['birthday'];
@@ -203,19 +204,20 @@ function generateAIRecommendation($studentName, $kinderLevel, $evaluationPeriod,
     // Set cURL options
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_POST, true);
-    curl_setopt($ch, CURLOPT_POSTFIELDS, $jsonPayload);
     curl_setopt($ch, CURLOPT_HTTPHEADER, [
         'Content-Type: application/json',
-        'Content-Length: ' . strlen($jsonPayload)
+        // 'Content-Length: ' . strlen($jsonPayload)
     ]);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, $jsonPayload);
     
     // Execute cURL request
     $response = curl_exec($ch);
     
     // Check for errors
     if (curl_errno($ch)) {
-        // Handle error - for now, fall back to the original recommendation generator
         curl_close($ch);
+
+        // Handle error - for now, fall back to the original recommendation generator
         return generateFallbackRecommendation($studentName, $kinderLevel, $evaluationPeriod, 
                                             $grossMotorScore, $fineMotorScore, $selfHelpScore, 
                                             $receptiveLanguageScore, $expressiveLanguageScore, 
@@ -241,9 +243,24 @@ function generateAIRecommendation($studentName, $kinderLevel, $evaluationPeriod,
 }
 
 
-
-
-
-
+function getSpecificRecommendation($area, $kinderLevel) {
+    $recommendations = [
+        "gross motor skills" => "Incorporate more physical activities like obstacle courses, ball games, and dancing. These activities help develop coordination, balance, and strength.",
+        
+        "fine motor skills" => "Provide opportunities for drawing, cutting with scissors, stringing beads, and manipulating small objects. These activities help develop hand-eye coordination and finger dexterity.",
+        
+        "self-help skills" => "Encourage independence in daily routines like dressing, eating, and personal hygiene. Break tasks into smaller steps and provide positive reinforcement.",
+        
+        "receptive language" => "Read books together daily, play listening games, and give clear, simple instructions. Ensure the student understands by asking them to repeat or demonstrate understanding.",
+        
+        "expressive language" => "Engage in conversations, ask open-ended questions, and encourage the student to describe activities, feelings, and experiences. Model correct language use without criticism.",
+        
+        "cognitive skills" => "Introduce puzzles, sorting activities, and simple problem-solving games. Ask questions that promote critical thinking and provide opportunities for exploration and discovery.",
+        
+        "socio-emotional skills" => "Create opportunities for cooperative play, teach emotional vocabulary, and model appropriate ways to express feelings. Use role-play to practice social situations."
+    ];
+    
+    return $recommendations[$area] ?? "Provide additional support and practice in this area.";
+}   
 
 
