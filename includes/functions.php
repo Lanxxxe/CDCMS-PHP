@@ -17,6 +17,17 @@ function isActivePage($page) {
     return basename($_SERVER['PHP_SELF']) === $page;
 }
 
+function maskEmail($email) {
+    $parts = explode("@", $email);
+    $name = $parts[0];
+    $domain = $parts[1];
+
+    // Show only the first two characters of the name, mask the rest
+    $maskedName = substr($name, 0, 2) . str_repeat("*", max(0, strlen($name) - 2));
+
+    return $maskedName . "@" . $domain;
+}
+
 function validateEmail($email) {
     if (filter_var(trim($email), FILTER_VALIDATE_EMAIL)) {
         return true;
