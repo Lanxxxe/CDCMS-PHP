@@ -1,6 +1,6 @@
 <?php
 error_reporting(E_ALL);
-ini_set("display_errors", 0);
+ini_set("display_errors", 1);
 session_start();
 $pageTitle = "Teacher Dashboard";
 require_once '../config/database.php';
@@ -77,11 +77,27 @@ try {
             JOIN enrollment e ON se.student_id = e.student_id
             JOIN student s ON se.student_id = s.id
             LEFT JOIN recommendation r ON se.evaluation_period = r.evaluation_period AND s.id = r.student_id
+            JOIN guardian_info g ON s.id = g.student_id
+            WHERE g.firstname LIKE :firstname 
+            AND (g.middlename LIKE :middlename OR (g.middlename IS NULL AND :middlename IS NULL))
+            AND g.lastname LIKE :lastname
             GROUP BY s.id $query_filter
             LIMIT $perPage OFFSET $offset";
 
     $stmt = $pdo->prepare($sql);
-    $stmt->execute();
+    // $guardianFirstName = $_SESSION['first_name'];
+    // $guardianMiddleName = $_SESSION['middle_name'];
+    // $guardianLastName = $_SESSION['last_name'];
+
+    $guardianFirstName ='Johnpaul';
+    $guardianMiddleName = 'Araceli';
+    $guardianLastName = 'Daniel';
+
+    $stmt->execute([
+        'firstname' => "%$guardianFirstName%",
+        'middlename' => "%$guardianMiddleName%",
+        'lastname' => "%$guardianLastName%"
+    ]);
     $students_info = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 } catch (PDOException $e) {
