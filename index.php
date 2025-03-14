@@ -3,7 +3,12 @@
 $pageTitle = "Home";
 include './includes/header.php';
 require_once './config/database.php';
-// require_once 'includes/functions.php';
+require_once 'includes/functions.php';
+
+if (!isLoggedIn()) {
+    header('Location: login.php');
+}
+
 ?>
 
 <?php

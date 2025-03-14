@@ -1,10 +1,18 @@
 <?php
 session_start();
-require_once './config/database.php';
 $pageTitle = "Enrollment";
-// Enrollment page
-require_once './includes/functions.php';
 include './includes/header.php';
+require_once './config/database.php';
+require_once 'includes/functions.php';
+
+if (isLoggedIn()) {
+    if (hasRole('teacher')) {
+        header('Location: teacher/dashboard.php');
+        exit;
+    }
+} else {
+    header('Location: login.php');
+}
 
 ?>
 

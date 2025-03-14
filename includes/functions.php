@@ -50,9 +50,7 @@ function initializeLoginUser($email, $password) {
             $_SESSION['address'] = $row['address'];
 
             if ($row['role'] === 'teacher') {
-                header('Location: teacher/dashboard.php');
-            } else {
-                header('Location: guardian/dashboard.php');
+                header('Location: ./dashboard.php');
             }
         } else {
             $_SESSION['login_error'] = 'Invalid email or password!';
@@ -62,6 +60,76 @@ function initializeLoginUser($email, $password) {
 
     } catch (PDOException $e) {
         echo 'Internal Sever Error';
+        exit;
+    }
+}
+
+function initializeGuardianUser($email, $password) {
+    global $pdo;
+
+    try {
+        $api_url = "https://smartbarangayconnect.com/api_get_registerlanding.php";
+        $response = file_get_contents($api_url);
+        $data = json_decode($response, true);
+
+        // ✅ Clear old data in subdomain database
+        $pdo->exec("TRUNCATE TABLE registerlanding");
+
+        // ✅ Insert new data into subdomain database
+        $sql = "INSERT INTO registerlanding 
+        (id, email, first_name, last_name, session_token, picture_pic, birth_date, sex, mobile, working, occupation, house, street, barangay, city, password) 
+        VALUES (:id, :email, :first_name, :last_name, :session_token, :picture_pic, :birth_date, :sex, :mobile, :working, :occupation, :house, :street, :barangay, :city, :password)";
+
+        $stmt = $pdo->prepare($sql);
+
+        foreach ($data as $row) {
+        $stmt->execute([
+                ':id' => $row['id'],
+                ':email' => $row['email'],
+                ':first_name' => $row['first_name'],
+                ':last_name' => $row['last_name'],
+                ':session_token' => $row['session_token'],
+                ':picture_pic' => $row['picture_pic'] ?? null,
+                ':birth_date' => $row['birth_date'],
+                ':sex' => $row['sex'],
+                ':mobile' => $row['mobile'],
+                ':working' => $row['working'],
+                ':occupation' => $row['occupation'],
+                ':house' => $row['house'],
+                ':street' => $row['street'],
+                ':barangay' => $row['barangay'],
+                ':city' => $row['city'],
+                ':password' => $row['password']
+            ]);
+        }
+
+        $stmt = $pdo->prepare("SELECT id, first_name, last_name, birthday, address, email, password FROM registerlanding WHERE email = :email");
+        $stmt->bindParam(':email', $email, PDO::PARAM_STR);
+        $stmt->execute();
+        
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (password_verify($password, $row['password'])) {
+            $_SESSION['user_id'] = $row['id'];
+            $_SESSION['first_name'] = $row['first_name'];
+            $_SESSION['last_name'] = $row['last_name'];
+            $_SESSION['role'] = 'guardian';
+            $_SESSION['birthday'] = $row['birthday'];
+            $_SESSION['email'] = $row['email'];
+            $_SESSION['address'] = $row['address'];
+
+            if ($row['role'] === 'teacher') {
+                header('Location: index.php');
+            }
+        } else {
+            $_SESSION['login_error'] = 'Invalid email or password!';
+            header('Location: login.php');
+        }
+        exit;
+
+    } catch (PDOException $e) {
+        echo 'Internal Sever Error';
+        header('Location: login.php');
         exit;
     }
 }

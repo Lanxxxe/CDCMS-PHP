@@ -11,13 +11,13 @@ if (isLoggedIn()) {
         exit;
     }
     if (hasRole('guardian')) {
-        header('Location: guardian/dashboard.php');
+        header('Location: index.php');
         exit;
     }
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    initializeLoginUser($_POST['email'], $_POST['password']);
+    initializeGuardianUser($_POST['email'], $_POST['password']);
 }
 
 unset($_SESSION['code_resent']);
@@ -36,9 +36,9 @@ unset($_SESSION['code_resent']);
                 <div class="card shadow p-4 h-100 py-5">
                     <div class="text-center">
                         <img src="./assets/images/logo.png" alt="Logo" width="80">
-                        <h4 class="mt-2">Login</h4>
+                        <h4 class="mt-2">Guardian Login</h4>
                     </div>
-                    <form method="post">
+                    <form method="POST">
                         <div class="mb-3">
                             <label class="form-label">Email</label>
                             <input name="email" type="email" class="form-control" placeholder="Enter e-mail">
@@ -68,7 +68,7 @@ unset($_SESSION['code_resent']);
                         ?>
                         <button type="submit" class="btn btn-success w-100">Login</button>
                     </form>
-                    <p class="text-center mt-3">Already have an account? <a href="./registration.php">Register Here</a></p>
+                    <!-- <p class="text-center mt-3">Already have an account? <a href="./registration.php">Register Here</a></p> -->
                 </div>
 
             </div>
