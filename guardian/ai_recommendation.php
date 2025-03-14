@@ -16,93 +16,43 @@ include './includes/navbar.php';
 include './includes/sidebar.php';
 
 
+// Get guardian information from session
+$guardianFirstName = $_SESSION['first_name'] ?? '';
+$guardianMiddleName = $_SESSION['middle_name'] ?? '';
+$guardianLastName = $_SESSION['last_name'] ?? '';
+
+// $guardianFirstName ='Johnpaul';
+// $guardianMiddleName = 'Araceli';
+// $guardianLastName = 'Daniel';
+
+// Get student information based on guardian
 try {
-
-    $sql = "SELECT DISTINCT schedule as kinder_level FROM enrollment";
-    $stmt = $pdo->prepare($sql);
-    $stmt->execute();
-    $kinder_levels = $stmt->fetchAll(PDO::FETCH_COLUMN, 0);
-} catch (PDOException $e) {
-    echo "Connection failed: " . $e->getMessage();
-}
-
-$filter_level = $_GET['kinder_level'] ?? 'all';
-if (!in_array($filter_level, $kinder_levels)) {
-    $filter_level = 'all';
-}
-
-$query_filter = '';
-if ($filter_level !== 'all') {
-    $query_filter = " HAVING e.schedule = '$filter_level'";
-}
-
-function levelSelected($value) {
-    global $filter_level;
-    if ($value === $filter_level) {
-        echo 'selected';
-    }
-}
-
-$perPage = 10; // Number of records per page
-$currentPage = isset($_GET['page']) ? (int)$_GET['page'] : 1;
-$offset = ($currentPage - 1) * $perPage;
-
-// Count total records
-$sqlCount = "SELECT COUNT(DISTINCT s.id) FROM student_evaluation se
-             JOIN enrollment e ON se.student_id = e.student_id
-             JOIN student s ON se.student_id = s.id" . str_replace('HAVING', 'WHERE', $query_filter);
-$totalRecords = $pdo->query($sqlCount)->fetchColumn();
-$totalPages = ceil($totalRecords / $perPage);
-
-
-
-try {
-    $sql = "SELECT DISTINCT
+    $sql = "SELECT 
                 s.id AS student_id,
                 CONCAT(s.firstname, ' ', IFNULL(s.middlename, ''), ' ', s.lastname) AS fullname,
-                e.schedule AS kinder_level,
-                GROUP_CONCAT(DISTINCT se.evaluation_period ORDER BY se.evaluation_period ASC) AS evaluation_periods,
-                se.gross_motor_score,
-                se.fine_motor_score,
-                se.self_help_score,
-                se.receptive_language_score,
-                se.expressive_language_score,
-                se.cognitive_score,
-                se.socio_emotional_score,
-                (se.gross_motor_score + se.fine_motor_score + se.self_help_score + 
-                se.receptive_language_score + se.expressive_language_score + 
-                se.cognitive_score + se.socio_emotional_score) AS total_score,
+                MAX(e.schedule) AS kinder_level,
                 GROUP_CONCAT(DISTINCT r.recommendation ORDER BY r.evaluation_period ASC SEPARATOR '/vA#}v&SEP{#Av/') AS recommendations
-            FROM student_evaluation se
-            JOIN enrollment e ON se.student_id = e.student_id
-            JOIN student s ON se.student_id = s.id
-            LEFT JOIN recommendation r ON se.evaluation_period = r.evaluation_period AND s.id = r.student_id
+            FROM student s
+            JOIN enrollment e ON s.id = e.student_id
             JOIN guardian_info g ON s.id = g.student_id
+            LEFT JOIN student_evaluation se ON s.id = se.student_id
+            LEFT JOIN recommendation r ON se.evaluation_period = r.evaluation_period AND s.id = r.student_id
             WHERE g.firstname LIKE :firstname 
-            AND (g.middlename LIKE :middlename OR (g.middlename IS NULL AND :middlename IS NULL))
+            AND (g.middlename LIKE :middlename OR (g.middlename IS NULL AND :middlename = ''))
             AND g.lastname LIKE :lastname
-            GROUP BY s.id $query_filter
-            LIMIT $perPage OFFSET $offset";
+            GROUP BY s.id, s.firstname, s.middlename, s.lastname";
 
     $stmt = $pdo->prepare($sql);
-    // $guardianFirstName = $_SESSION['first_name'];
-    // $guardianMiddleName = $_SESSION['middle_name'];
-    // $guardianLastName = $_SESSION['last_name'];
-
-    $guardianFirstName ='Johnpaul';
-    $guardianMiddleName = 'Araceli';
-    $guardianLastName = 'Daniel';
-
-    $stmt->execute([
-        'firstname' => "%$guardianFirstName%",
-        'middlename' => "%$guardianMiddleName%",
-        'lastname' => "%$guardianLastName%"
-    ]);
+    $stmt->bindValue(':firstname', "%$guardianFirstName%", PDO::PARAM_STR);
+    $stmt->bindValue(':middlename', empty($guardianMiddleName) ? '' : "%$guardianMiddleName%", PDO::PARAM_STR);
+    $stmt->bindValue(':lastname', "%$guardianLastName%", PDO::PARAM_STR);
+    $stmt->execute();
     $students_info = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 } catch (PDOException $e) {
-    echo "Connection failed: " . $e->getMessage();
+    echo "Query failed: " . $e->getMessage();
 }
+
 ?>
 
 <main role="main" class="main-content">
@@ -112,25 +62,15 @@ try {
         </div>
 
         <div class="container-fluid px-4 mt-3">
-            <form method="get" action="">
-                <div class="row">
-                    <div class="col-md-4">
-                        <label for="kinder_level">Kinder Level:</label>
-                        <select name="kinder_level" id="kinder_level" class="form-control">
-                            <option value="all" class="kinder_level_option" <?php levelSelected('all') ?> >All</option>
-                            <?php foreach ($kinder_levels as $level) { ?>
-                            <option value="<?php echo $level ?>" class="kinder_level_option" <?php levelSelected($level) ?> >
-                                <?php echo $level ?>
-                            </option>
-                            <?php }?>
-                        </select>
-                    </div>
-                    <div class="col-md-4">
-                        <button type="submit" class="btn btn-primary mt-4">Filter</button>
-                    </div>
+            <?php if (empty($students_info)): ?>
+            <div class="card shadow-sm mt-4">
+                <div class="card-body text-center py-5">
+                    <i class="bi bi-exclamation-circle text-warning" style="font-size: 4rem;"></i>
+                    <h4 class="mt-3">No recommendations available</h4>
+                    <p class="text-muted">There are no AI recommendations available for your student(s) at this time.</p>
                 </div>
-            </form>
-
+            </div>
+            <?php else: ?>
             <div class="table-responsive mt-3">
                 <table class="table table-bordered table-striped table-sm mt-3">
                     <thead>
@@ -143,61 +83,25 @@ try {
                         </tr>
                     </thead>
                     <tbody>
-                        <?php
-                            if (!empty($students_info)) {
-                                foreach ($students_info as $row) {
-                                    $recommendations = explode('/vA#}v&SEP{#Av/', $row['recommendations']);
-
-                                    echo "<tr class=\"recommendation_row\">
-                                        <td>{$row['student_id']}</td>
-                                        <td>{$row['kinder_level']}</td>
-                                        <td>{$row['fullname']}</td>
-                                        <td>" . $recommendations[0] . "</td>
-                                        <td>" . $recommendations[1] . "</td>
-                                    </tr>";
+                        <?php foreach ($students_info as $row): ?>
+                            <?php 
+                                $recommendations = explode('/vA#}v&SEP{#Av/', $row['recommendations'] ?? '');
+                                // Ensure we have at least 2 elements in the array
+                                if (count($recommendations) < 2) {
+                                    $recommendations = array_pad($recommendations, 2, 'No recommendation available');
                                 }
-                            } else {
-                                echo "<tr><td class='text-center' colspan='5'>No data available</td></tr>";
-                            }
-                        ?>
+                            ?>
+                            <tr>
+                                <td><?php echo htmlspecialchars($row['student_id']); ?></td>
+                                <td><?php echo htmlspecialchars($row['kinder_level']); ?></td>
+                                <td><?php echo htmlspecialchars($row['fullname']); ?></td>
+                                <td><?php echo htmlspecialchars($recommendations[0] ?? 'No recommendation available'); ?></td>
+                                <td><?php echo htmlspecialchars($recommendations[1] ?? 'No recommendation available'); ?></td>
+                            </tr>
+                        <?php endforeach; ?>
                     </tbody>
                 </table>
             </div>
-
-
-            <?php if ($totalPages > 1): ?>
-            <nav>
-                <ul class="pagination justify-content-center">
-                    <li class="page-item <?php echo $currentPage <= 1 ? 'disabled' : ''; ?>">
-                        <a class="page-link" href="<?php echo buildPaginationUrl(1); ?>">&laquo; First</a>
-                    </li>
-                    <li class="page-item <?php echo $currentPage <= 1 ? 'disabled' : ''; ?>">
-                        <a class="page-link" href="<?php echo buildPaginationUrl($currentPage - 1); ?>">Previous</a>
-                    </li>
-
-                    <?php
-                    $startPage = max(1, $currentPage - 2);
-                    $endPage = min($totalPages, $currentPage + 2);
-                    
-                    for ($i = $startPage; $i <= $endPage; $i++):
-                    ?>
-                        <li class="page-item <?php echo $i === $currentPage ? 'active' : ''; ?>">
-                            <?php if ($i === $currentPage): ?>
-                                <span class="page-link"><?php echo $i; ?></span>
-                            <?php else: ?>
-                                <a class="page-link" href="<?php echo buildPaginationUrl($i); ?>"><?php echo $i; ?></a>
-                            <?php endif; ?>
-                        </li>
-                    <?php endfor; ?>
-
-                    <li class="page-item <?php echo $currentPage >= $totalPages ? 'disabled' : ''; ?>">
-                        <a class="page-link" href="<?php echo buildPaginationUrl($currentPage + 1); ?>">Next</a>
-                    </li>
-                    <li class="page-item <?php echo $currentPage >= $totalPages ? 'disabled' : ''; ?>">
-                        <a class="page-link" href="<?php echo buildPaginationUrl($totalPages); ?>">Last &raquo;</a>
-                    </li>
-                </ul>
-            </nav>
             <?php endif; ?>
         </div>
     </div>

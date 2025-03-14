@@ -10,9 +10,9 @@ require_once '../config/database.php';
 // $guardianMiddleName = isset($_POST['guardian_middlename']) ? strtolower(trim($_POST['guardian_middlename'])) : '';
 // $guardianLastName = isset($_POST['guardian_lastname']) ? strtolower(trim($_POST['guardian_lastname'])) : '';
 
-$guardianFirstName = $_SESSION['first_name'];
-$guardianMiddleName = $_SESSION['middle_name'];
-$guardianLastName = $_SESSION['last_name'];
+$guardianFirstName = $_SESSION['first_name'] ?? '';
+$guardianMiddleName = $_SESSION['middle_name'] ?? '';
+$guardianLastName = $_SESSION['last_name'] ?? '';
 
 // $guardianFirstName ='Johnpaul';
 // $guardianMiddleName = 'Araceli';
@@ -74,36 +74,43 @@ include './includes/sidebar.php';
             <h3 class="mb-0">Attendance</h3>
         </div>
 
-        <div class="container-fluid px-4 mt-3">
-            <div class="table-responsive">
-                <table class="table table-bordered table-striped table-sm">
-                    <thead class="">
-                        <tr class="text-center table-head-columns">
-                            <th class="bg-primary text-white" scope="col">Student ID</th>
-                            <th class="bg-primary text-white" scope="col">Student Name</th>
-                            <th class="bg-primary text-white" scope="col">Date</th>
-                            <th class="bg-primary text-white" scope="col">Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php if (!empty($attendanceRecords)): ?>
-                            <?php foreach ($attendanceRecords as $record): ?>
-                                    <tr>
-                                        <td class="px-2 text-center"><?= htmlspecialchars($record['student_id']) ?></td>
-                                        <td><?= htmlspecialchars($record['student_name']) ?></td>
-                                        <td class="text-center"><?= htmlspecialchars($record['date']) ?></td>
-                                        <td class="text-center"><?= htmlspecialchars($record['status']) ?></td>
-                                    </tr>
-                                <?php endforeach; ?>
-                            <?php else: ?>
+
+        <?php if (!empty($attendanceRecords)): ?>
+            <div class="container-fluid px-4 mt-3">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped table-sm">
+                        <thead class="">
+                            <tr class="text-center table-head-columns">
+                                <th class="bg-primary text-white" scope="col">Student ID</th>
+                                <th class="bg-primary text-white" scope="col">Student Name</th>
+                                <th class="bg-primary text-white" scope="col">Date</th>
+                                <th class="bg-primary text-white" scope="col">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        <?php foreach ($attendanceRecords as $record): ?>
                                 <tr>
-                                    <td colspan="4" class="text-center">No attendance records found for this week.</td>
+                                    <td class="px-2 text-center"><?= htmlspecialchars($record['student_id']) ?></td>
+                                    <td><?= htmlspecialchars($record['student_name']) ?></td>
+                                    <td class="text-center"><?= htmlspecialchars($record['date']) ?></td>
+                                    <td class="text-center"><?= htmlspecialchars($record['status']) ?></td>
                                 </tr>
-                        <?php endif; ?>
-                    </tbody>
-                </table>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>  
+        <?php else: ?>
+            <div class="container-fluid px-4 mt-5">
+                <div class="card shadow-sm">
+                    <div class="card-body text-center py-5">
+                        <i class="bi bi-exclamation-circle text-warning" style="font-size: 4rem;"></i>
+                        <h4 class="mt-3">No Attendance available</h4>
+                        <p class="text-muted">Please contact the administrator if you believe this is an error.</p>
+                    </div>
+                </div>
             </div>
-        </div>  
+        <?php endif; ?>
     </div>
 </main>
 

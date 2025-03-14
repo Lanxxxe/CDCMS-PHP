@@ -1,13 +1,13 @@
 <?php
-// session_start();
+session_start();
 $pageTitle = "Home";
 include './includes/header.php';
 require_once './config/database.php';
-require_once 'includes/functions.php';
+require_once './includes/functions.php';
 
-if (!isLoggedIn()) {
-    header('Location: login.php');
-}
+// if (!isLoggedIn()) {
+//     header('Location: login.php');
+// }
 
 ?>
 
@@ -28,7 +28,7 @@ if (!isLoggedIn()) {
             </div>
         </div>
         
-        <img class="img-fluid w-75 mx-auto d-block rounded-sm" style="margin: 4rem 0;" src="{% static 'images/TOP.png' %}" alt="">
+        <img class="img-fluid w-75 mx-auto d-block rounded-sm" style="margin: 4rem 0;" src="./assets/images/TOP.png" alt="">
 
         <div class="container mt-4" style="padding: 4rem 0">
             <h3 class="text-center fw-bold" style="color: rgb(14, 67, 168);">ABOUT SCHOOL</h3>
@@ -39,14 +39,16 @@ if (!isLoggedIn()) {
             <div class="container d-flex flex-wrap py-3 mt-5 justify-content-center">
                 <div class="p-2" style="min-width: 300px;  width: 500px;">
                     <h3 class="text-center fw-bold" style="color: rgb(14, 67, 168); ">MISSION</h3>
-                    <div class="w-75 bg-primary mx-auto rounded p-4 mt-3">
-                        <p class="fs-5 text-white text-center">Our school is dedicated to providing a safe, nurturing, and engaging environment where children can explore their potential, develop essential skills, and build a strong foundation for lifelong learning and success.</p>
+                    <div class="w-75 bg-primary mx-auto rounded p-4 mt-3" style="height: 300px;">
+                        <p class="fs-5 text-white text-center my-auto">
+                        To Contribute to nation-building by ensuring that all Filipino children aged 3 to 4 are provided with developmentally-appropriate experiences to address their holistic needs.        
+                        </p>
                     </div>
                 </div>
                 <div class="p-2" style="min-width: 300px;  width: 500px;">
                     <h3 class="text-center fw-bold" style="color: rgb(14, 67, 168);  ">VISION</h3>
-                    <div class="w-75 bg-primary mx-auto rounded p-4 mt-3">
-                        <p class="fs-5 text-white text-center">Our school is dedicated to providing a safe, nurturing, and engaging environment where children can explore their potential, develop essential skills, and build a strong foundation for lifelong learning and success.</p>
+                    <div class="w-75 bg-primary mx-auto rounded p-4 mt-3" style="height: 300px;">
+                        <p class="fs-5 text-white text-center my-auto">By 2030, the Quezon City Government shall have fully implemented a comprehensive integrative and sustainable program for Childhood Care and Development (ECCD) throughout the city.</p>
                     </div>
                 </div>
             </div>

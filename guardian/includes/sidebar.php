@@ -29,8 +29,17 @@
             <span style="font-size: 10.5px; font-weight: bold; font-family: 'Inter', sans-serif;">MAIN COMPONENTS</span>
         </p>
 
-        <ul class="navbar-nav flex-fill w-100 mb-2 " id="studentManagement">
+        <ul class="navbar-nav flex-fill w-100 mb-2 " id="enrollment">
             <ul class="navbar-nav flex-fill w-100 mb-2">
+                <li class="nav-item w-100">
+                    <a class="nav-link" href="../enrollment.php">
+                    <i class="fa-solid fa-file"></i>
+                        <span class="ml-3 item-text">Enrollment</span>
+                    </a>
+                </li>
+            </ul>
+
+            <ul class="navbar-nav flex-fill w-100 mb-2 <?php echo basename($_SERVER['PHP_SELF']) == 'attendance.php' ? 'active' : ''; ?>" id="attendance">
                 <li class="nav-item w-100">
                     <a class="nav-link" href="./attendance.php">
                     <i class="fa-solid fa-clipboard-user"></i>
@@ -39,7 +48,7 @@
                 </li>
             </ul>
 
-            <ul class="navbar-nav flex-fill w-100 mb-2">
+            <ul class="navbar-nav flex-fill w-100 mb-2 <?php echo basename($_SERVER['PHP_SELF']) == 'grades.php' ? 'active' : ''; ?>" id="grades">
                 <li class="nav-item w-100">
                     <a class="nav-link" href="./grades.php">
                         <i class="fa-solid fa-newspaper"></i>
@@ -48,7 +57,7 @@
                 </li>
             </ul>
 
-            <ul class="navbar-nav flex-fill w-100 mb-2">
+            <ul class="navbar-nav flex-fill w-100 mb-2 <?php echo basename($_SERVER['PHP_SELF']) == 'requirements.php' ? 'active' : ''; ?>" id="requirements">
                 <li class="nav-item w-100">
                     <a class="nav-link" href="./requirements.php">
                         <i class="fa-solid fa-clipboard-check"></i>
@@ -57,7 +66,7 @@
                 </li>
             </ul>
 
-            <ul class="navbar-nav flex-fill w-100 mb-2">
+            <ul class="navbar-nav flex-fill w-100 mb-2 <?php echo basename($_SERVER['PHP_SELF']) == 'teachers_profile.php' ? 'active' : ''; ?>" id="teacher_profile">
                 <li class="nav-item w-100">
                     <a class="nav-link" href="./teachers_profile.php">
                         <i class="fa-solid fa-chalkboard-teacher"></i>
@@ -65,7 +74,7 @@
                     </a>
                 </li>
             </ul>
-            <ul class="navbar-nav flex-fill w-100 mb-2 <?php echo basename($_SERVER['PHP_SELF']) == 'ai_recommentdation.php' ? 'active' : ''; ?>" id="aiRecommendation">
+            <ul class="navbar-nav flex-fill w-100 mb-2 <?php echo basename($_SERVER['PHP_SELF']) == 'ai_recommendation.php' ? 'active' : ''; ?>" id="aiRecommendation">
                 <li class="nav-item w-100">
                     <a class="nav-link" href="./ai_recommendation.php">
                         <i class="fa-solid fa-robot"></i>

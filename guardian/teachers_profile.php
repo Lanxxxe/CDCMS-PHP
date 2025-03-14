@@ -3,12 +3,39 @@ session_start();
 $pageTitle = "Teacher Dashboard";
 // include '../includes/header.php';
 require_once '../config/database.php';
-// require_once '../includes/functions.php';
+require_once '../includes/functions.php';
 
-// if (!isLoggedIn() || !hasRole('teacher')) {
-//     header('Location: ../login.php');
-//     exit;
-// }
+if (!isLoggedIn()) {
+    header('Location: ../index.php');
+    exit;
+}
+
+// Prepare SQL statement to fetch user details only if role is "teacher"
+try {
+    // Prepare SQL statement to fetch user details only if role is "teacher"
+    $sql = "SELECT first_name, middle_name, last_name, address, email 
+            FROM user 
+            WHERE role = 'teacher'";
+    
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute();
+    
+    // Fetch user details
+    $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if ($user) {
+        $full_name = trim("{$user['first_name']} {$user['middle_name']} {$user['last_name']}");
+        $address = $user['address'];
+        $email = $user['email'];
+    } else {
+        // If no teacher found, display default values
+        $full_name = "Not a Teacher";
+        $address = "N/A";
+        $email = "N/A";
+    }
+} catch (PDOException $e) {
+    die("Database error: " . $e->getMessage());
+}
 
 include './includes/header.php';
 ?>
@@ -22,42 +49,6 @@ include './includes/sidebar.php';
 
 <main role="main" class="main-content">
             
-    <!--For Notification header naman ito-->
-    <!-- <div class="modal fade modal-notif modal-slide" tabindex="-1" role="dialog" aria-labelledby="defaultModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-sm" role="document">
-        <div class="modal-content">
-        <div class="modal-header">
-            <h5 class="modal-title" id="defaultModalLabel">Notifications</h5>
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-            </button>
-        </div>
-
-        <div class="modal-body">
-            <div class="list-group list-group-flush my-n3">
-                <div class="col-12 mb-4">
-                <div class="alert alert-success alert-dismissible fade show" role="alert" id="notification">
-                    <img class="fade show" src="{% static '/images/unified-lgu-logo.png' %}" width="35" height="35">
-                    <strong style="font-size:12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"></strong> 
-                    <button type="button" class="close" data-dismiss="alert" aria-label="Close" onclick="removeNotification()">
-                    <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                </div>
-
-            <div id="no-notifications" style="display: none; text-align:center; margin-top:10px;">
-                No notifications
-            </div>
-            </div>
-        </div>
-
-        <div class="modal-footer">
-            <button type="button" class="btn btn-secondary btn-block" onclick="clearAllNotifications()">Clear All</button>
-        </div>
-        </div>
-    </div>
-    </div> -->
-
 
     <!-- Page Content Here -->
     <div class="container-fluid py-3">
@@ -66,14 +57,13 @@ include './includes/sidebar.php';
         </div>
 
         <div class="container-fluid px-4">
-            <div class="d-flex align-items-center justify-content-center gap-5">
+            <div class="d-flex align-items-center justify-content-center" style="gap: 6rem;">
                 <img class="rounded img-fluid" src="../assets/images/female.jpg" alt="">
                 <div>
-                    <h4 class="fw-bold">Adviser</h4>
-                    <p class="mb-1">Name:</p>
-                    <p class="mb-1">Contact Number:</p>
-                    <p class="mb-1">Schedule:</p>
-                    <p class="mb-1">Role:</p>
+                    <h1 class="fw-bold mb-4">Adviser</h1>
+                    <h4 class="mb-3"><strong>Full Name:</strong> <?php echo $full_name; ?></h4>
+                    <h4 class="mb-3"><strong>Address:</strong> <?php echo $address ?? 'N/A'; ?></h4>
+                    <h4 class="mb-3"><strong>Email:</strong> <?php echo $email; ?></h4>
                 </div>
             </div>
         </div>  

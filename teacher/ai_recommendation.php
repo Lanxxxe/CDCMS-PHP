@@ -33,7 +33,7 @@ if (!in_array($filter_level, $kinder_levels)) {
 
 $query_filter = '';
 if ($filter_level !== 'all') {
-    $query_filter = " HAVING e.schedule = '$filter_level'";
+    $query_filter = " AND e.schedule = '$filter_level'";
 }
 
 function levelSelected($value) {
@@ -50,7 +50,8 @@ $offset = ($currentPage - 1) * $perPage;
 // Count total records
 $sqlCount = "SELECT COUNT(DISTINCT s.id) FROM student_evaluation se
              JOIN enrollment e ON se.student_id = e.student_id
-             JOIN student s ON se.student_id = s.id" . str_replace('HAVING', 'WHERE', $query_filter);
+             JOIN student s ON se.student_id = s.id
+             WHERE 1=1" . $query_filter;
 $totalRecords = $pdo->query($sqlCount)->fetchColumn();
 $totalPages = ceil($totalRecords / $perPage);
 
@@ -60,16 +61,16 @@ try {
     $sql = "SELECT DISTINCT
                 s.id AS student_id,
                 CONCAT(s.firstname, ' ', IFNULL(s.middlename, ''), ' ', s.lastname) AS fullname,
-                e.schedule AS kinder_level,
+                MAX(e.schedule) AS kinder_level,
                 GROUP_CONCAT(DISTINCT se.evaluation_period ORDER BY se.evaluation_period ASC) AS evaluation_periods,
-                se.gross_motor_score,
-                se.fine_motor_score,
-                se.self_help_score,
-                se.receptive_language_score,
-                se.expressive_language_score,
-                se.cognitive_score,
-                se.socio_emotional_score,
-                (se.gross_motor_score + se.fine_motor_score + se.self_help_score + 
+                MAX(se.gross_motor_score) AS gross_motor_score,
+                MAX(se.fine_motor_score) AS fine_motor_score,
+                MAX(se.self_help_score) AS self_help_score,
+                MAX(se.receptive_language_score) AS receptive_language_score,
+                MAX(se.expressive_language_score) AS expressive_language_score,
+                MAX(se.cognitive_score) AS cognitive_score,
+                MAX(se.socio_emotional_score) AS socio_emotional_score,
+                MAX(se.gross_motor_score + se.fine_motor_score + se.self_help_score + 
                 se.receptive_language_score + se.expressive_language_score + 
                 se.cognitive_score + se.socio_emotional_score) AS total_score,
                 GROUP_CONCAT(DISTINCT r.recommendation ORDER BY r.evaluation_period ASC SEPARATOR '/vA#}v&SEP{#Av/') AS recommendations
@@ -77,7 +78,8 @@ try {
             JOIN enrollment e ON se.student_id = e.student_id
             JOIN student s ON se.student_id = s.id
             LEFT JOIN recommendation r ON se.evaluation_period = r.evaluation_period AND s.id = r.student_id
-            GROUP BY s.id $query_filter
+            WHERE 1=1 $query_filter
+            GROUP BY s.id, s.firstname, s.middlename, s.lastname
             LIMIT $perPage OFFSET $offset";
 
     $stmt = $pdo->prepare($sql);
@@ -87,9 +89,13 @@ try {
 } catch (PDOException $e) {
     echo "Connection failed: " . $e->getMessage();
 }
+
+
 ?>
 
 <main role="main" class="main-content">
+    <?php include_once './includes/notification.php' ?> 
+
     <div class="container-fluid py-3">
         <div class="welcome-section">
             <h3 class="mb-0">A.I. Recommendation</h3>

@@ -9,16 +9,14 @@ require_once '../config/database.php';
 // $guardianMiddleName = isset($_POST['guardian_middlename']) ? strtolower(trim($_POST['guardian_middlename'])) : '';
 // $guardianLastName = isset($_POST['guardian_lastname']) ? strtolower(trim($_POST['guardian_lastname'])) : '';
 
-$guardianFirstName ='Johnpaul';
-$guardianMiddleName = 'Araceli';
-$guardianLastName = 'Daniel';
+// $guardianFirstName ='Johnpaul';
+// $guardianMiddleName = 'Araceli';
+// $guardianLastName = 'Daniel';
 
-// Check if search form was submitted
-if (empty($guardianFirstName) && empty($guardianMiddleName) && empty($guardianLastName)) {
-    // Display search form if no search parameters provided
-    include 'guardian_search_form.php'; // You'll need to create this form
-    exit;
-}
+$guardianFirstName = $_SESSION['first_name'] ?? '';
+$guardianMiddleName = $_SESSION['middle_name'] ?? '';
+$guardianLastName = $_SESSION['last_name'] ?? '';
+
 
 // Get student information based on guardian information
 $query = "SELECT s.id, s.student_id as student_number, 
@@ -46,190 +44,186 @@ $stmt->bindParam(':lastname', $lastNameParam, PDO::PARAM_STR);
 $stmt->execute();
 $student = $stmt->fetch();
 
-// If student not found, show error
-if (!$student) {
-    echo "<div class='alert alert-danger'>No student found with the specified guardian information.</div>";
-    include 'guardian_search_form.php'; // You'll need to create this form
-    exit;
-}
+if ($student) {
+    // Define requirements
+    $requirements = [
+        'psa' => [
+            'name' => 'PSA Birth Certificate',
+            'file' => $student['psa'],
+            'deletable' => false
+        ],
+        'immunizationcard' => [
+            'name' => 'Immunization Card',
+            'file' => $student['immunizationcard'],
+            'deletable' => true
+        ],
+        'recentphoto' => [
+            'name' => 'Recent Photo',
+            'file' => $student['recentphoto'],
+            'deletable' => true
+        ],
+        'guardianqcid' => [
+            'name' => 'Guardian QC ID',
+            'file' => $student['guardianqcid'],
+            'deletable' => false
+        ]
+    ];
 
-// Define requirements
-$requirements = [
-    'psa' => [
-        'name' => 'PSA Birth Certificate',
-        'file' => $student['psa'],
-        'deletable' => false
-    ],
-    'immunizationcard' => [
-        'name' => 'Immunization Card',
-        'file' => $student['immunizationcard'],
-        'deletable' => true
-    ],
-    'recentphoto' => [
-        'name' => 'Recent Photo',
-        'file' => $student['recentphoto'],
-        'deletable' => true
-    ],
-    'guardianqcid' => [
-        'name' => 'Guardian QC ID',
-        'file' => $student['guardianqcid'],
-        'deletable' => false
-    ]
-];
+    // Store student ID for use in the rest of the code
+    $studentId = $student['id'];
 
-// Store student ID for use in the rest of the code
-$studentId = $student['id'];
-
-// Process form submission for adding/updating requirements
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && isset($_POST['requirement'])) {
-    $action = $_POST['action'];
-    $requirement = $_POST['requirement'];
-    
-    // Validate requirement type
-    if (!array_key_exists($requirement, $requirements)) {
-        die("Invalid requirement type");
-    }
-    
-    try {
-        // Begin transaction
-        $pdo->beginTransaction();
+    // Process form submission for adding/updating requirements
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && isset($_POST['requirement'])) {
+        $action = $_POST['action'];
+        $requirement = $_POST['requirement'];
         
-        if ($action === 'add' || $action === 'update') {
-            // Check if file was uploaded
-            if (!isset($_FILES['requirement_file']) || $_FILES['requirement_file']['error'] !== UPLOAD_ERR_OK) {
-                throw new Exception("Please select a file to upload");
-            }
+        // Validate requirement type
+        if (!array_key_exists($requirement, $requirements)) {
+            die("Invalid requirement type");
+        }
+        
+        try {
+            // Begin transaction
+            $pdo->beginTransaction();
             
-            // Validate file type (allow only images and PDFs)
-            $allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'application/pdf'];
-            $fileType = $_FILES['requirement_file']['type'];
-            
-            if (!in_array($fileType, $allowedTypes)) {
-                throw new Exception("Only JPEG, PNG, GIF images and PDF files are allowed");
-            }
-            
-            // Handle file uploads
-            $upload_dir = '../enrollment_process/uploads/files/';
-
-
-            // Ensure base directory exists
-            if (!is_dir($upload_dir)) {
-                mkdir($upload_dir, 0777, true);
-            }
-
-            // Generate unique filename
-            $student_name = strtolower($student['firstname']) . '_' . strtolower($student['lastname']);
-            $extension = pathinfo($_FILES['requirement_file']['name'], PATHINFO_EXTENSION);
-            $newFilename = $student_name . '_' . $requirement . '.' . $extension;
-
-            // Create student-specific directory
-            $userDir = $upload_dir . $student_name . '/' . $requirement . '/';
-            
-            if (!is_dir($userDir)) {
-                if (!mkdir($userDir, 0777, true) && !is_dir($userDir)) {
-                    throw new Exception("Failed to create directory: $userDir");
+            if ($action === 'add' || $action === 'update') {
+                // Check if file was uploaded
+                if (!isset($_FILES['requirement_file']) || $_FILES['requirement_file']['error'] !== UPLOAD_ERR_OK) {
+                    throw new Exception("Please select a file to upload");
                 }
-            }
+                
+                // Validate file type (allow only images and PDFs)
+                $allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'application/pdf'];
+                $fileType = $_FILES['requirement_file']['type'];
+                
+                if (!in_array($fileType, $allowedTypes)) {
+                    throw new Exception("Only JPEG, PNG, GIF images and PDF files are allowed");
+                }
+                
+                // Handle file uploads
+                $upload_dir = '../enrollment_process/uploads/files/';
 
-            // Full file path
-            $uploadPath = $userDir . $newFilename;
 
-            // Move uploaded file
-            if (!move_uploaded_file($_FILES['requirement_file']['tmp_name'], $uploadPath)) {
-                throw new Exception("Failed to upload file");
-            }
-            
-            // Update enrollment record
-            $query = "UPDATE enrollment SET $requirement = :file_path WHERE student_id = :student_id";
-            $stmt = $pdo->prepare($query);
-            $stmt->bindParam(':file_path', $uploadPath);
-            $stmt->bindParam(':student_id', $studentId, PDO::PARAM_INT);
-            $stmt->execute();
-            
-            // Create notification
-            $notificationName = $student['full_name'];
-            $notificationContent = "Guardian has " . ($action === 'add' ? 'added' : 'updated') . " the " . $requirements[$requirement]['name'] . " for " . $student['full_name'];
-            
-            $query = "INSERT INTO notification (name, action, content, file_path) 
-                      VALUES (:name, :action, :content, :file_path)";
-            $stmt = $pdo->prepare($query);
-            $stmt->bindParam(':name', $notificationName);
-            $stmt->bindParam(':action', $action);
-            $stmt->bindParam(':content', $notificationContent);
-            $stmt->bindParam(':file_path', $uploadPath);
-            $stmt->execute();
-            
-            // Commit transaction
-            $pdo->commit();
-            
-            // Set success message
-            $successMessage = "Requirement " . ($action === 'add' ? 'added' : 'updated') . " successfully!";
-            
-        } elseif ($action === 'delete' && $requirements[$requirement]['deletable']) {
-            // Get current file path
-            $currentFile = $student[$requirement];
-            
-            if (!empty($currentFile)) {
-                // Delete file if it exists
-                $filePath = '../enrollment_process/' . $currentFile;
-                if (file_exists($filePath)) {
-                    unlink($filePath);
+                // Ensure base directory exists
+                if (!is_dir($upload_dir)) {
+                    mkdir($upload_dir, 0777, true);
+                }
+
+                // Generate unique filename
+                $student_name = strtolower($student['firstname']) . '_' . strtolower($student['lastname']);
+                $extension = pathinfo($_FILES['requirement_file']['name'], PATHINFO_EXTENSION);
+                $newFilename = $student_name . '_' . $requirement . '.' . $extension;
+
+                // Create student-specific directory
+                $userDir = $upload_dir . $student_name . '/' . $requirement . '/';
+                
+                if (!is_dir($userDir)) {
+                    if (!mkdir($userDir, 0777, true) && !is_dir($userDir)) {
+                        throw new Exception("Failed to create directory: $userDir");
+                    }
+                }
+
+                // Full file path
+                $uploadPath = $userDir . $newFilename;
+
+                // Move uploaded file
+                if (!move_uploaded_file($_FILES['requirement_file']['tmp_name'], $uploadPath)) {
+                    throw new Exception("Failed to upload file");
                 }
                 
                 // Update enrollment record
-                $query = "UPDATE enrollment SET $requirement = NULL WHERE student_id = :student_id";
+                $query = "UPDATE enrollment SET $requirement = :file_path WHERE student_id = :student_id";
                 $stmt = $pdo->prepare($query);
+                $stmt->bindParam(':file_path', $uploadPath);
                 $stmt->bindParam(':student_id', $studentId, PDO::PARAM_INT);
                 $stmt->execute();
                 
                 // Create notification
                 $notificationName = $student['full_name'];
-                $notificationContent = "Guardian has deleted the " . $requirements[$requirement]['name'] . " for " . $student['full_name'];
+                $notificationContent = "Guardian has " . ($action === 'add' ? 'added' : 'updated') . " the " . $requirements[$requirement]['name'] . " for " . $student['full_name'];
                 
                 $query = "INSERT INTO notification (name, action, content, file_path) 
-                          VALUES (:name, :action, :content, :file_path)";
+                        VALUES (:name, :action, :content, :file_path)";
                 $stmt = $pdo->prepare($query);
                 $stmt->bindParam(':name', $notificationName);
-                $action = 'delete';
                 $stmt->bindParam(':action', $action);
                 $stmt->bindParam(':content', $notificationContent);
-                $stmt->bindParam(':file_path', $currentFile);
+                $stmt->bindParam(':file_path', $uploadPath);
                 $stmt->execute();
                 
                 // Commit transaction
                 $pdo->commit();
                 
                 // Set success message
-                $successMessage = "Requirement deleted successfully!";
+                $successMessage = "Requirement " . ($action === 'add' ? 'added' : 'updated') . " successfully!";
+                
+            } elseif ($action === 'delete' && $requirements[$requirement]['deletable']) {
+                // Get current file path
+                $currentFile = $student[$requirement];
+                
+                if (!empty($currentFile)) {
+                    // Delete file if it exists
+                    $filePath = '../enrollment_process/' . $currentFile;
+                    if (file_exists($filePath)) {
+                        unlink($filePath);
+                    }
+                    
+                    // Update enrollment record
+                    $query = "UPDATE enrollment SET $requirement = NULL WHERE student_id = :student_id";
+                    $stmt = $pdo->prepare($query);
+                    $stmt->bindParam(':student_id', $studentId, PDO::PARAM_INT);
+                    $stmt->execute();
+                    
+                    // Create notification
+                    $notificationName = $student['full_name'];
+                    $notificationContent = "Guardian has deleted the " . $requirements[$requirement]['name'] . " for " . $student['full_name'];
+                    
+                    $query = "INSERT INTO notification (name, action, content, file_path) 
+                            VALUES (:name, :action, :content, :file_path)";
+                    $stmt = $pdo->prepare($query);
+                    $stmt->bindParam(':name', $notificationName);
+                    $action = 'delete';
+                    $stmt->bindParam(':action', $action);
+                    $stmt->bindParam(':content', $notificationContent);
+                    $stmt->bindParam(':file_path', $currentFile);
+                    $stmt->execute();
+                    
+                    // Commit transaction
+                    $pdo->commit();
+                    
+                    // Set success message
+                    $successMessage = "Requirement deleted successfully!";
+                } else {
+                    throw new Exception("No file to delete");
+                }
             } else {
-                throw new Exception("No file to delete");
+                throw new Exception("Invalid action");
             }
-        } else {
-            throw new Exception("Invalid action");
+            
+            // Refresh student data after changes
+            $query = "SELECT s.id, s.student_id as student_number, 
+                    CONCAT(s.firstname, ' ', IFNULL(s.middlename, ''), ' ', s.lastname, ' ', IFNULL(s.suffix, '')) AS full_name,
+                    e.psa, e.immunizationcard, e.recentphoto, e.guardianqcid
+                    FROM student s
+                    JOIN enrollment e ON s.id = e.student_id
+                    WHERE s.id = :id";
+            $stmt = $pdo->prepare($query);
+            $stmt->bindParam(':id', $studentId, PDO::PARAM_INT);
+            $stmt->execute();
+            $student = $stmt->fetch();
+            
+            // Update requirements array
+            foreach ($requirements as $key => $value) {
+                $requirements[$key]['file'] = $student[$key];
+            }
+            
+        } catch (Exception $e) {
+            // Rollback transaction on error
+            $pdo->rollBack();
+            $errorMessage = $e->getMessage();
         }
-        
-        // Refresh student data after changes
-        $query = "SELECT s.id, s.student_id as student_number, 
-                  CONCAT(s.firstname, ' ', IFNULL(s.middlename, ''), ' ', s.lastname, ' ', IFNULL(s.suffix, '')) AS full_name,
-                  e.psa, e.immunizationcard, e.recentphoto, e.guardianqcid
-                  FROM student s
-                  JOIN enrollment e ON s.id = e.student_id
-                  WHERE s.id = :id";
-        $stmt = $pdo->prepare($query);
-        $stmt->bindParam(':id', $studentId, PDO::PARAM_INT);
-        $stmt->execute();
-        $student = $stmt->fetch();
-        
-        // Update requirements array
-        foreach ($requirements as $key => $value) {
-            $requirements[$key]['file'] = $student[$key];
-        }
-        
-    } catch (Exception $e) {
-        // Rollback transaction on error
-        $pdo->rollBack();
-        $errorMessage = $e->getMessage();
     }
+
 }
 
 // Function to get file URL
@@ -268,10 +262,22 @@ include './includes/sidebar.php';
     <div class="container-fluid py-3">
         <div class="welcome-section">
             <h3 class="mb-0">Requirements</h3>
-            <p class="text-muted">Student: <?php echo htmlspecialchars($student['full_name']); ?> (<?php echo htmlspecialchars($student['student_number']); ?>)</p>
         </div>
 
-        <div class="container-fluid px-4 mt-3">
+        <?php if (!$student): ?>
+            <div class="container-fluid px-4 mt-5">
+                <div class="card shadow-sm">
+                    <div class="card-body text-center py-5">
+                        <i class="bi bi-exclamation-circle text-warning" style="font-size: 4rem;"></i>
+                        <h4 class="mt-3">You don't have any enrolled student</h4>
+                        <p class="text-muted">Please contact the administrator if you believe this is an error.</p>
+                    </div>
+                </div>
+            </div>
+        <?php else: ?>
+            <p class="text-muted">Student: <?php echo htmlspecialchars($student['full_name']); ?> (<?php echo htmlspecialchars($student['student_number']); ?>)</p>
+            
+            <div class="container-fluid px-4 mt-3">
             <?php foreach ($requirements as $key => $value): ?>
                 <div class="card mb-4 py-4 d-flex align-items-center justify-content-center flex-column shadow-sm">
                     <?php if ($value['file'] && isImage($value['file'])): ?>
@@ -387,6 +393,7 @@ include './includes/sidebar.php';
                 <?php endif; ?>
             <?php endforeach; ?>
         </div>
+        <?php endif; ?>
     </div>
 </main>
 
