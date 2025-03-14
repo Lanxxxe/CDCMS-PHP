@@ -5,6 +5,17 @@ $pageTitle = "Teacher Dashboard";
 require_once '../config/database.php';
 
 
+function maskEmail($email) {
+    $parts = explode("@", $email);
+    $name = $parts[0];
+    $domain = $parts[1];
+
+    // Show only the first two characters of the name, mask the rest
+    $maskedName = substr($name, 0, 2) . str_repeat("*", max(0, strlen($name) - 2));
+
+    return $maskedName . "@" . $domain;
+}
+
 // Pagination settings
 $itemsPerPage = 10; // Number of guardians per page
 $currentPage = isset($_GET['page']) ? (int)$_GET['page'] : 1;
@@ -82,6 +93,8 @@ function buildPaginationUrl($page) {
     $params = $_GET;
     $params['page'] = $page;
     return '?' . http_build_query($params);
+
+
 }
 include './includes/header.php';
 ?>
@@ -137,7 +150,7 @@ include './includes/sidebar.php';
                                     <td><?php echo htmlspecialchars($guardian['relationship']); ?></td>
                                     <td><?php echo htmlspecialchars($guardian['guardian_name']); ?></td>
                                     <td><?php echo htmlspecialchars($guardian['contact_number']); ?></td>
-                                    <td><?php echo htmlspecialchars($guardian['email']); ?></td>
+                                    <td><?php echo htmlspecialchars(maskEmail($guardian['email'])); ?></td>
                                     <td>
                                         <a href="./edit_guardian.php?id=<?php echo $guardian['id']; ?>" class="btn btn-primary btn-sm">
                                             <i class="fa-solid fa-edit"></i> Update

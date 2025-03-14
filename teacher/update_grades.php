@@ -3,7 +3,7 @@ session_start();
 $pageTitle = "Teacher Dashboard";
 // include '../includes/header.php';
 require_once '../config/database.php';
-// require_once '../includes/functions.php';
+require_once '../includes/functions.php';
 
 // if (!isLoggedIn() || !hasRole('teacher')) {
 //     header('Location: ../login.php');
@@ -221,76 +221,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// Function to generate AI recommendation using Gemini API
-function generateAIRecommendation($studentName, $kinderLevel, $evaluationPeriod, 
-                                 $grossMotorScore, $fineMotorScore, $selfHelpScore, 
-                                 $receptiveLanguageScore, $expressiveLanguageScore, 
-                                 $cognitiveScore, $socioEmotionalScore, $totalScore) {
-    
-    // In a real implementation, you would call the Gemini API here
-    // For this example, we'll simulate a response based on the scores
-    
-    $areas = [];
-    $strengths = [];
-    
-    // Identify areas of strength and improvement
-    if ($grossMotorScore < 7) $areas[] = "gross motor skills";
-    else $strengths[] = "gross motor skills";
-    
-    if ($fineMotorScore < 7) $areas[] = "fine motor skills";
-    else $strengths[] = "fine motor skills";
-    
-    if ($selfHelpScore < 7) $areas[] = "self-help skills";
-    else $strengths[] = "self-help skills";
-    
-    if ($receptiveLanguageScore < 7) $areas[] = "receptive language";
-    else $strengths[] = "receptive language";
-    
-    if ($expressiveLanguageScore < 7) $areas[] = "expressive language";
-    else $strengths[] = "expressive language";
-    
-    if ($cognitiveScore < 7) $areas[] = "cognitive skills";
-    else $strengths[] = "cognitive skills";
-    
-    if ($socioEmotionalScore < 7) $areas[] = "socio-emotional skills";
-    else $strengths[] = "socio-emotional skills";
-    
-    // Generate recommendation
-    $recommendation = "Evaluation Report for $studentName ($kinderLevel) - $evaluationPeriod Evaluation Period\n\n";
-    
-    $recommendation .= "Overall Assessment:\n";
-    if ($totalScore >= 40) {
-        $recommendation .= "The student is showing excellent progress across most developmental areas. ";
-    } elseif ($totalScore >= 30) {
-        $recommendation .= "The student is showing good progress in many developmental areas. ";
-    } else {
-        $recommendation .= "The student needs additional support in several developmental areas. ";
-    }
-    
-    if (!empty($strengths)) {
-        $recommendation .= "\n\nStrengths:\n";
-        $recommendation .= "The student demonstrates strong abilities in " . implode(", ", $strengths) . ". ";
-        $recommendation .= "Continue to provide opportunities to further develop these skills.";
-    }
-    
-    if (!empty($areas)) {
-        $recommendation .= "\n\nAreas for Improvement:\n";
-        $recommendation .= "The student would benefit from additional support in " . implode(", ", $areas) . ". ";
-        
-        // Add specific recommendations based on areas needing improvement
-        foreach ($areas as $area) {
-            $recommendation .= "\n\n" . getSpecificRecommendation($area, $kinderLevel);
-        }
-    }
-    
-    $recommendation .= "\n\nNext Steps:\n";
-    $recommendation .= "1. Continue to monitor progress in all developmental areas.\n";
-    $recommendation .= "2. Implement the suggested activities to support areas needing improvement.\n";
-    $recommendation .= "3. Maintain regular communication with parents/guardians about the student's progress.\n";
-    $recommendation .= "4. Consider a follow-up assessment in 2-3 months to track improvement.";
-    
-    return $recommendation;
-}
 
 // Helper function to provide specific recommendations by area
 function getSpecificRecommendation($area, $kinderLevel) {

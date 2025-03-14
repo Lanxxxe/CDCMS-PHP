@@ -64,3 +64,186 @@ function initializeLoginUser($email, $password) {
         exit;
     }
 }
+
+
+// Fallback function that uses the original recommendation logic
+function generateFallbackRecommendation($studentName, $kinderLevel, $evaluationPeriod, 
+                                      $grossMotorScore, $fineMotorScore, $selfHelpScore, 
+                                      $receptiveLanguageScore, $expressiveLanguageScore, 
+                                      $cognitiveScore, $socioEmotionalScore, $totalScore) {
+    
+    $areas = [];
+    $strengths = [];
+    
+    // Identify areas of strength and improvement
+    if ($grossMotorScore < 7) $areas[] = "gross motor skills";
+    else $strengths[] = "gross motor skills";
+    
+    if ($fineMotorScore < 7) $areas[] = "fine motor skills";
+    else $strengths[] = "fine motor skills";
+    
+    if ($selfHelpScore < 7) $areas[] = "self-help skills";
+    else $strengths[] = "self-help skills";
+    
+    if ($receptiveLanguageScore < 7) $areas[] = "receptive language";
+    else $strengths[] = "receptive language";
+    
+    if ($expressiveLanguageScore < 7) $areas[] = "expressive language";
+    else $strengths[] = "expressive language";
+    
+    if ($cognitiveScore < 7) $areas[] = "cognitive skills";
+    else $strengths[] = "cognitive skills";
+    
+    if ($socioEmotionalScore < 7) $areas[] = "socio-emotional skills";
+    else $strengths[] = "socio-emotional skills";
+    
+    // Generate recommendation
+    $recommendation = "Evaluation Report for $studentName ($kinderLevel) - $evaluationPeriod Evaluation Period\n\n";
+    
+    $recommendation .= "Overall Assessment:\n";
+    if ($totalScore >= 40) {
+        $recommendation .= "The student is showing excellent progress across most developmental areas. ";
+    } elseif ($totalScore >= 30) {
+        $recommendation .= "The student is showing good progress in many developmental areas. ";
+    } else {
+        $recommendation .= "The student needs additional support in several developmental areas. ";
+    }
+    
+    if (!empty($strengths)) {
+        $recommendation .= "\n\nStrengths:\n";
+        $recommendation .= "The student demonstrates strong abilities in " . implode(", ", $strengths) . ". ";
+        $recommendation .= "Continue to provide opportunities to further develop these skills.";
+    }
+    
+    if (!empty($areas)) {
+        $recommendation .= "\n\nAreas for Improvement:\n";
+        $recommendation .= "The student would benefit from additional support in " . implode(", ", $areas) . ". ";
+        
+        // Add specific recommendations based on areas needing improvement
+        foreach ($areas as $area) {
+            $recommendation .= "\n\n" . getSpecificRecommendation($area, $kinderLevel);
+        }
+    }
+    
+    $recommendation .= "\n\nNext Steps:\n";
+    $recommendation .= "1. Continue to monitor progress in all developmental areas.\n";
+    $recommendation .= "2. Implement the suggested activities to support areas needing improvement.\n";
+    $recommendation .= "3. Maintain regular communication with parents/guardians about the student's progress.\n";
+    $recommendation .= "4. Consider a follow-up assessment in 2-3 months to track improvement.";
+    
+    return $recommendation;
+}
+
+// Function to generate AI recommendation using external API
+function generateAIRecommendation($studentName, $kinderLevel, $evaluationPeriod, 
+                                 $grossMotorScore, $fineMotorScore, $selfHelpScore, 
+                                 $receptiveLanguageScore, $expressiveLanguageScore, 
+                                 $cognitiveScore, $socioEmotionalScore, $totalScore) {
+    
+    // API endpoint
+    $url = 'https://lanxe05.pythonanywhere.com/recommendation';
+    
+    if ($evaluationPeriod == '1st') {
+        // Standard scores for first evaluation period
+        $standardScores = [
+            "Gross Motor" => 8,
+            "Fine Motor" => 8,
+            "Self Help" => 19,
+            "Receptive Language" => 4,
+            "Expressive Language" => 6,
+            "Cognitive" => 19,
+            "Socio-Emotional" => 20
+        ];
+    } else if ($evaluationPeriod == '2nd') {
+        // Standard scores for second evaluation period (higher expectations)
+        $standardScores = [
+            "Gross Motor" => 13,
+            "Fine Motor" => 1,
+            "Self Help" => 26,
+            "Receptive Language" => 5,
+            "Expressive Language" => 8,
+            "Cognitive" => 21,
+            "Socio-Emotional" => 24
+        ];
+    } else {
+        // Default standard scores for any other evaluation period
+        $standardScores = [
+            "Gross Motor" => 50,
+            "Fine Motor" => 50,
+            "Self Help" => 50,
+            "Receptive Language" => 50,
+            "Expressive Language" => 50,
+            "Cognitive" => 50,
+            "Socio-Emotional" => 50
+        ];
+    }
+    
+    // Construct the JSON payload
+    $payload = [
+        "st" => $studentName,
+        "semester" => $evaluationPeriod,
+        "student_grades" => [
+            "Gross Motor" => $grossMotorScore,
+            "Fine Motor" => $fineMotorScore,
+            "Self Help" => $selfHelpScore,
+            "Receptive Language" => $receptiveLanguageScore,
+            "Expressive Language" => $expressiveLanguageScore,
+            "Cognitive" => $cognitiveScore,
+            "Socio-Emotional" => $socioEmotionalScore
+        ],
+        "standard_raw_scores" => $standardScores
+    ];
+    
+    // Convert payload to JSON
+    $jsonPayload = json_encode($payload);
+    
+    // Initialize cURL session
+    $ch = curl_init($url);
+    
+    // Set cURL options
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, $jsonPayload);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, [
+        'Content-Type: application/json',
+        'Content-Length: ' . strlen($jsonPayload)
+    ]);
+    
+    // Execute cURL request
+    $response = curl_exec($ch);
+    
+    // Check for errors
+    if (curl_errno($ch)) {
+        // Handle error - for now, fall back to the original recommendation generator
+        curl_close($ch);
+        return generateFallbackRecommendation($studentName, $kinderLevel, $evaluationPeriod, 
+                                            $grossMotorScore, $fineMotorScore, $selfHelpScore, 
+                                            $receptiveLanguageScore, $expressiveLanguageScore, 
+                                            $cognitiveScore, $socioEmotionalScore, $totalScore);
+    }
+    
+    // Close cURL session
+    curl_close($ch);
+    
+    // Decode the JSON response
+    $responseData = json_decode($response, true);
+    
+    // Check if the response contains a recommendation
+    if (isset($responseData['recommendation'])) {
+        return $responseData['recommendation'];
+    } else {
+        // Fall back to the original recommendation generator if the API response is invalid
+        return generateFallbackRecommendation($studentName, $kinderLevel, $evaluationPeriod, 
+                                            $grossMotorScore, $fineMotorScore, $selfHelpScore, 
+                                            $receptiveLanguageScore, $expressiveLanguageScore, 
+                                            $cognitiveScore, $socioEmotionalScore, $totalScore);
+    }
+}
+
+
+
+
+
+
+
+

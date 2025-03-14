@@ -4,7 +4,7 @@ require_once "../../config/database.php"; // Adjust path if needed
 
 try {
     // Fetch latest 12 notifications
-    $stmt = $pdo->prepare("SELECT id, name, action, content, file_path, is_read, date_created FROM notification ORDER BY date_created DESC LIMIT 12");
+    $stmt = $pdo->prepare("SELECT id, name, action, content, file_path, is_read, date_created FROM notification WHERE action IN ('update', 'add') ORDER BY date_created DESC LIMIT 12");
     $stmt->execute();
     $notifications = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
