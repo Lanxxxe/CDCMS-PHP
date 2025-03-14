@@ -65,6 +65,14 @@
                     </a>
                 </li>
             </ul>
+            <ul class="navbar-nav flex-fill w-100 mb-2 <?php echo basename($_SERVER['PHP_SELF']) == 'ai_recommentdation.php' ? 'active' : ''; ?>" id="aiRecommendation">
+                <li class="nav-item w-100">
+                    <a class="nav-link" href="./ai_recommendation.php">
+                        <i class="fa-solid fa-robot"></i>
+                        <span class="ml-3 item-text">AI Recommendation</span>
+                    </a>
+                </li>
+            </ul>
         </ul>
     </nav>
 </aside>
