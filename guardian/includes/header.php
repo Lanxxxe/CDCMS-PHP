@@ -1,9 +1,9 @@
 <?php
 include_once '../includes/functions.php';
-// if (!isLoggedIn() || !hasRole('guardian')) {
-//     header('Location: ../login.php');
-//     exit;
-// }
+if (!isLoggedIn() || !hasRole('guardian')) {
+    header('Location: ../login.php');
+    exit;
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
