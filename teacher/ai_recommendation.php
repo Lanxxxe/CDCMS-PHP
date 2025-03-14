@@ -55,8 +55,8 @@ $totalRecords = $pdo->query($sqlCount)->fetchColumn();
 $totalPages = ceil($totalRecords / $perPage);
 
 
-try {
 
+try {
     $sql = "SELECT DISTINCT
                 s.id AS student_id,
                 CONCAT(s.firstname, ' ', IFNULL(s.middlename, ''), ' ', s.lastname) AS fullname,
@@ -71,12 +71,14 @@ try {
                 se.socio_emotional_score,
                 (se.gross_motor_score + se.fine_motor_score + se.self_help_score + 
                 se.receptive_language_score + se.expressive_language_score + 
-                se.cognitive_score + se.socio_emotional_score) AS total_score
+                se.cognitive_score + se.socio_emotional_score) AS total_score,
+                GROUP_CONCAT(DISTINCT r.recommendation ORDER BY r.evaluation_period ASC SEPARATOR '/vA#}v&SEP{#Av/') AS recommendations
             FROM student_evaluation se
             JOIN enrollment e ON se.student_id = e.student_id
-            JOIN student s ON se.student_id = s.id 
-            GROUP BY s.id $query_filter 
-            LIMIT $perPage OFFSET $offset" ;
+            JOIN student s ON se.student_id = s.id
+            LEFT JOIN recommendation r ON se.evaluation_period = r.evaluation_period AND s.id = r.student_id
+            GROUP BY s.id $query_filter
+            LIMIT $perPage OFFSET $offset";
 
     $stmt = $pdo->prepare($sql);
     $stmt->execute();
@@ -128,19 +130,14 @@ try {
                         <?php
                             if (!empty($students_info)) {
                                 foreach ($students_info as $row) {
-                                    $evaluation_periods = explode(',', $row['evaluation_periods']);
-                                    $evaluation_period1 = $evaluation_periods[0] ?? null;
-                                    $evaluation_period2 = $evaluation_periods[1] ?? null;
-
-                                    $recommendation1 = $evaluation_period1? generateAIRecommendation($row['fullname'], $row['kinder_level'], $evaluation_period1, $row['gross_motor_score'], $row['fine_motor_score'], $row['self_help_score'], $row['receptive_language_score'], $row['expressive_language_score'], $row['cognitive_score'], $row['socio_emotional_score'], $row['total_score']) : 'No Recommendation'; 
-                                    $recommendation2 = $evaluation_period2? generateAIRecommendation($row['fullname'], $row['kinder_level'], $evaluation_period2, $row['gross_motor_score'], $row['fine_motor_score'], $row['self_help_score'], $row['receptive_language_score'], $row['expressive_language_score'], $row['cognitive_score'], $row['socio_emotional_score'], $row['total_score']): 'No Recommendation';
+                                    $recommendations = explode('/vA#}v&SEP{#Av/', $row['recommendations']);
 
                                     echo "<tr class=\"recommendation_row\">
                                         <td>{$row['student_id']}</td>
                                         <td>{$row['kinder_level']}</td>
                                         <td>{$row['fullname']}</td>
-                                        <td>" . $recommendation1 . "</td>
-                                        <td>" . $recommendation2 . "</td>
+                                        <td>" . $recommendations[0] . "</td>
+                                        <td>" . $recommendations[1] . "</td>
                                     </tr>";
                                 }
                             } else {

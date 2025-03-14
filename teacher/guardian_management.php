@@ -5,17 +5,6 @@ $pageTitle = "Teacher Dashboard";
 require_once '../config/database.php';
 
 
-function maskEmail($email) {
-    $parts = explode("@", $email);
-    $name = $parts[0];
-    $domain = $parts[1];
-
-    // Show only the first two characters of the name, mask the rest
-    $maskedName = substr($name, 0, 2) . str_repeat("*", max(0, strlen($name) - 2));
-
-    return $maskedName . "@" . $domain;
-}
-
 // Pagination settings
 $itemsPerPage = 10; // Number of guardians per page
 $currentPage = isset($_GET['page']) ? (int)$_GET['page'] : 1;
