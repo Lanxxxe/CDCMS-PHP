@@ -1,5 +1,7 @@
 <?php
 include_once '../includes/functions.php';
+
+session_start();
 if (!isLoggedIn() || !hasRole('guardian')) {
     header('Location: ../login.php');
     exit;

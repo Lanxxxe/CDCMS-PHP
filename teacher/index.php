@@ -5,16 +5,16 @@ include '../includes/header.php';
 require_once '../config/database.php';
 require_once '../includes/functions.php';
 
-if (isLoggedIn()) {
-    if (hasRole('teacher')) {
-        header('Location: dashboard.php');
-        exit;
-    }
-    if (hasRole('guardian')) {
-        header('Location: ../guardian/dashboard.php');
-        exit;
-    }
-}
+// if (isLoggedIn()) {
+//     if (hasRole('teacher')) {
+//         header('Location: dashboard.php');
+//         exit;
+//     }
+//     if (hasRole('guardian')) {
+//         header('Location: ../guardian/dashboard.php');
+//         exit;
+//     }
+// }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     initializeLoginUser($_POST['email'], $_POST['password']);
