@@ -1,8 +1,8 @@
 <?php
 // Database configuration
 $host = 'localhost';
-$dbname = 'cdcmsdatabase';
-$username = 'root';
+$dbname = 'cil_cdcms_databases';
+$username = 'childdev';
 $password = '';
 
 try {
