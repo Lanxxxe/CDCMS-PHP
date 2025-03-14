@@ -82,7 +82,19 @@ function initializeGuardianUser($email, $password) {
     try {
         $api_url = "https://smartbarangayconnect.com/api_get_registerlanding.php";
         $response = file_get_contents($api_url);
+
+        if (!$response) {
+            $_SESSION['login_error'] = "Failed to fetch API data.";
+            header('Location: login.php');
+            exit;
+        }
+
         $data = json_decode($response, true);
+        if (!$data) {
+            $_SESSION['login_error'] = "Error decoding API response.";
+            header('Location: login.php');
+            exit;
+        }
 
         // ✅ Clear old data in subdomain database
         $pdo->exec("TRUNCATE TABLE registerlanding");
@@ -93,16 +105,15 @@ function initializeGuardianUser($email, $password) {
         VALUES (:id, :email, :first_name, :last_name, :session_token, :picture_pic, :birth_date, :sex, :mobile, :working, :occupation, :house, :street, :barangay, :city, :password)";
 
         $stmt = $pdo->prepare($sql);
-
         foreach ($data as $row) {
-        $stmt->execute([
+            $stmt->execute([
                 ':id' => $row['id'],
                 ':email' => $row['email'],
                 ':first_name' => $row['first_name'],
                 ':last_name' => $row['last_name'],
                 ':session_token' => $row['session_token'],
                 ':picture_pic' => $row['picture_pic'] ?? null,
-                ':birth_date' => $row['birth_date'],
+                ':birth_date' => $row['birth_date'], // Fix column name
                 ':sex' => $row['sex'],
                 ':mobile' => $row['mobile'],
                 ':working' => $row['working'],
@@ -111,43 +122,48 @@ function initializeGuardianUser($email, $password) {
                 ':street' => $row['street'],
                 ':barangay' => $row['barangay'],
                 ':city' => $row['city'],
-                ':password' => $row['password']
+                ':password' => $row['password'] // If stored hashed, verify later
             ]);
         }
 
-        $stmt = $pdo->prepare("SELECT id, first_name, last_name, birthday, address, email, password FROM registerlanding WHERE email = :email");
+        // ✅ Check for user credentials
+        $stmt = $pdo->prepare("SELECT id, first_name, last_name, birth_date, house, street, barangay, city, email, password FROM registerlanding WHERE email = :email");
         $stmt->bindParam(':email', $email, PDO::PARAM_STR);
         $stmt->execute();
-        
+
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
+        if (!$row) {
+            $_SESSION['login_error'] = "No user found with email: $email";
+            header('Location: login.php');
+            exit;
+        }
+
+        // ✅ Password verification
         if (password_verify($password, $row['password'])) {
-        // if ($password === 'pass') {
             $_SESSION['user_id'] = $row['id'];
             $_SESSION['first_name'] = $row['first_name'];
             $_SESSION['last_name'] = $row['last_name'];
             $_SESSION['role'] = 'guardian';
-            $_SESSION['birthday'] = $row['birthday'];
+            $_SESSION['birth_date'] = $row['birth_date']; // Fix column name
             $_SESSION['email'] = $row['email'];
             $_SESSION['address'] = $row['address'];
 
-            if ($row['role'] === 'teacher') {
-                header('Location: index.php');
-            } else {
-                header('Location: ./guardian/dashboard.php ');
-            }
+            header('Location: ./guardian/dashboard.php');
+            exit;
         } else {
-            $_SESSION['login_error'] = 'Invalid email or password!';
+            $_SESSION['login_error'] = "Invalid password for $email.";
             header('Location: login.php');
+            exit;
         }
-        exit;
 
     } catch (PDOException $e) {
-        echo 'Internal Sever Error';
+        $_SESSION['login_error'] = "Database Error: " . $e->getMessage();
         header('Location: login.php');
         exit;
     }
 }
+
 
 
 // Fallback function that uses the original recommendation logic

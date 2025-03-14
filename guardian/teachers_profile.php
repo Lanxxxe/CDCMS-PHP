@@ -1,4 +1,5 @@
 <?php
+session_start();
 $pageTitle = "Teacher Dashboard";
 // include '../includes/header.php';
 require_once '../config/database.php';

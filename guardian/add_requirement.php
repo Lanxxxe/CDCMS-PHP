@@ -22,7 +22,7 @@ $requirement_type = sanitize($_GET['type']);
 // Validate requirement type
 $valid_types = ['psa', 'immunization_card', 'recent_photo', 'guardian_qcid'];
 if (!in_array($requirement_type, $valid_types)) {
-    displayAlert("Invalid requirement type", "danger");
+
     header('Location: requirements.php');
     exit;
 }
@@ -68,17 +68,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $stmt->execute([$student_id, $new_name]);
                 }
                 
-                displayAlert("Requirement uploaded successfully!", "success");
                 header("Location: requirements.php");
                 exit;
             } catch (PDOException $e) {
-                displayAlert("Failed to save requirement: " . $e->getMessage(), "danger");
+                echo $e;
             }
         } else {
-            displayAlert("Failed to upload file", "danger");
+            echo 'An error occur';
         }
     } else {
-        displayAlert("Please select a file to upload", "danger");
+        echo 'An error occur';
     }
 }
 
@@ -91,7 +90,6 @@ include 'includes/sidebar.php';
 
 <div class="container-fluid px-4 mt-3">
     <form method="POST" enctype="multipart/form-data">
-        <?php showAlert(); ?>
         <div class="mb-3">
             <label for="file" class="form-label">Upload <?php echo $requirement_name; ?></label>
             <input type="file" class="form-control" name="file" required>

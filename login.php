@@ -3,7 +3,7 @@ session_start();
 $pageTitle = "Home";
 include './includes/header.php';
 require_once './config/database.php';
-require_once 'includes/functions.php';
+require_once './includes/functions.php';
 
 if (isLoggedIn()) {
     if (hasRole('teacher')) {
@@ -58,6 +58,7 @@ unset($_SESSION['code_resent']);
                                 <strong>Error:</strong> <?php echo $_SESSION['login_error']; ?>
                                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                             </div>
+                            <?php unset($_SESSION['login_error']); ?>
                         <?php endif; ?>
                         <button type="submit" class="btn btn-success w-100">Login</button>
                     </form>
