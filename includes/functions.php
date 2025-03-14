@@ -134,7 +134,7 @@ function initializeGuardianUser($email, $password) {
             if ($row['role'] === 'teacher') {
                 header('Location: index.php');
             } else {
-                header('Location: index.php ');
+                header('Location: ./guardian/dashboard.php ');
             }
         } else {
             $_SESSION['login_error'] = 'Invalid email or password!';
