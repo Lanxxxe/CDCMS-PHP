@@ -10,10 +10,6 @@ if (isLoggedIn()) {
         header('Location: teacher/dashboard.php');
         exit;
     }
-    if (hasRole('guardian')) {
-        header('Location: index.php');
-        exit;
-    }
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
