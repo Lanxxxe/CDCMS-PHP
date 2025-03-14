@@ -1,66 +1,77 @@
 <?php
+error_reporting(E_ALL);
+ini_set("display_errors", 1);
 session_start();
-$pageTitle = "Teacher Dashboard";
+$pageTitle = "Guardian Dashboard";
 // include '../includes/header.php';
 require_once '../config/database.php';
 
 
-// Get guardian name from form or URL parameters and convert to lowercase
-// $guardianFirstName = isset($_POST['guardian_firstname']) ? strtolower(trim($_POST['guardian_firstname'])) : '';
-// $guardianMiddleName = isset($_POST['guardian_middlename']) ? strtolower(trim($_POST['guardian_middlename'])) : '';
-// $guardianLastName = isset($_POST['guardian_lastname']) ? strtolower(trim($_POST['guardian_lastname'])) : '';
 
-$guardianFirstName ='Johnpaul';
-$guardianMiddleName = 'Araceli';
-$guardianLastName = 'Daniel';
+// Get filter value for kinder level
+$kinderFilter = isset($_GET['kinder_level']) ? $_GET['kinder_level'] : '';
 
+// Get all kinder levels for the filter dropdown
+$kinderLevelsQuery = "SELECT DISTINCT schedule FROM enrollment ORDER BY schedule";
+$stmt = $pdo->prepare($kinderLevelsQuery);
+$stmt->execute();
+$kinderLevels = $stmt->fetchAll();
 
-// Redirect if required fields are empty
-if (empty($guardianFirstName) || empty($guardianLastName)) {
-    header("Location: index.php");
-    exit();
+// Build the query
+$whereClause = "";
+$params = [];
+
+if (!empty($kinderFilter)) {
+    $whereClause = " AND e.schedule = :kinder_level";
+    $params[':kinder_level'] = $kinderFilter;
 }
 
-// SQL query to fetch student details, evaluation scores, and recommendations
-$sql = "SELECT 
-            s.student_id,
-            CONCAT(s.firstname, ' ', COALESCE(s.middlename, ''), ' ', s.lastname, ' ', COALESCE(s.suffix, '')) AS full_name,
-            
-            -- 1st Evaluation Total Score
-            (SELECT COALESCE(SUM(gross_motor_score + fine_motor_score + self_help_score + receptive_language_score + expressive_language_score + cognitive_score + socio_emotional_score), 0)
-             FROM student_evaluation 
-             WHERE student_id = s.id AND evaluation_period = '1st') AS first_eval_score,
+// Get students with their evaluation scores
+$query = "
+    SELECT 
+        s.id,
+        s.student_id AS student_number,
+        e.schedule AS kinder_level,
+        CONCAT(s.lastname, ', ', s.firstname, ' ', COALESCE(s.middlename, '')) AS full_name,
+        (SELECT SUM(gross_motor_score + fine_motor_score + self_help_score + receptive_language_score + 
+                  expressive_language_score + cognitive_score + socio_emotional_score) 
+         FROM student_evaluation 
+         WHERE student_id = s.id AND evaluation_period = 'First') AS first_evaluation_total,
+        (SELECT SUM(gross_motor_score + fine_motor_score + self_help_score + receptive_language_score + 
+                  expressive_language_score + cognitive_score + socio_emotional_score) 
+         FROM student_evaluation 
+         WHERE student_id = s.id AND evaluation_period = 'Second') AS second_evaluation_total
+    FROM student s
+    JOIN enrollment e ON s.id = e.student_id
+    JOIN guardian_info g ON s.id = g.student_id
+    WHERE g.firstname LIKE :firstname 
+    AND (g.middlename LIKE :middlename OR (g.middlename IS NULL AND :middlename IS NULL))
+    AND g.lastname LIKE :lastname" . $whereClause . " 
+    ORDER BY s.lastname, s.firstname";
 
-            -- 2nd Evaluation Total Score
-            (SELECT COALESCE(SUM(gross_motor_score + fine_motor_score + self_help_score + receptive_language_score + expressive_language_score + cognitive_score + socio_emotional_score), 0)
-             FROM student_evaluation 
-             WHERE student_id = s.id AND evaluation_period = '2nd') AS second_eval_score,
+$stmt = $pdo->prepare($query);
 
-            -- Recommendation (latest if available)
-            (SELECT recommendation FROM recommendation 
-             WHERE student_id = s.id 
-             ORDER BY id DESC LIMIT 1) AS recommendation
+// Bind filter parameter if it exists
+if (!empty($params)) {
+    foreach ($params as $key => $value) {
+        $stmt->bindValue($key, $value);
+    }
+}
 
-        FROM 
-            student s
-        INNER JOIN 
-            guardian_info g ON s.id = g.student_id
-        WHERE 
-            LOWER(g.firstname) LIKE LOWER(:firstname) AND
-            (LOWER(g.middlename) LIKE LOWER(:middlename) OR (g.middlename IS NULL AND :middlename = '')) AND
-            LOWER(g.lastname) LIKE LOWER(:lastname)
-        ORDER BY 
-            s.lastname, s.firstname";
 
-$stmt = $pdo->prepare($sql);
+$guardianFirstName = $_SESSION['first_name'];
+$guardianMiddleName = $_SESSION['middle_name'];
+$guardianLastName = $_SESSION['last_name'];
 
-// Bind parameters with wildcard search
+// $guardianFirstName ='Johnpaul';
+// $guardianMiddleName = 'Araceli';
+// $guardianLastName = 'Daniel';
+
 $stmt->execute([
     'firstname' => "%$guardianFirstName%",
     'middlename' => "%$guardianMiddleName%",
     'lastname' => "%$guardianLastName%"
 ]);
-
 $students = $stmt->fetchAll();
 
 include './includes/header.php';
@@ -74,48 +85,83 @@ include './includes/sidebar.php';
 ?>
 
 <main role="main" class="main-content">
-
+            
+    
+    <?php include_once './includes/notification.php' ?>
 
     <!-- Page Content Here -->
     <div class="container-fluid py-3">
-        <!-- Welcome Section -->
-        <div class="welcome-section">
+        <div class="welcome-section d-flex justify-content-between align-items-center">
             <h3 class="mb-0">Grades</h3>
+            <form class="mr-3" method="get">
+                <label for="kinder_level">Filter by Kinder Level:</label>
+                <select name="kinder_level" id="kinder_level" class="form-select d-inline-block w-auto" onchange="this.form.submit()">
+                    <option value="">All Levels</option>
+                    <?php foreach ($kinderLevels as $level): ?>
+                        <option value="<?php echo htmlspecialchars($level['schedule']); ?>" 
+                                <?php echo $kinderFilter === $level['schedule'] ? 'selected' : ''; ?>>
+                            <?php echo htmlspecialchars($level['schedule']); ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+            </form>
         </div>
 
         <div class="container-fluid px-4">
-
-            <table class="table table-bordered mt-3">
+            <table class="table table-bordered table-striped mt-3">
                 <thead>
                     <tr>
                         <th class="bg-primary text-white" scope="col">Student ID</th>
+                        <th class="bg-primary text-white" scope="col">Kinder Level</th>
                         <th class="bg-primary text-white" scope="col">Full Name</th>
                         <th class="bg-primary text-white" scope="col">1st Evaluation (SS)</th>
                         <th class="bg-primary text-white" scope="col">2nd Evaluation (SS)</th>
-                        <th class="bg-primary text-white" scope="col">Recommendation</th>
+                        <th class="bg-primary text-white" scope="col">Action</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <?php if (!empty($students)): ?>
+                    <?php if (count($students) > 0): ?>
                         <?php foreach ($students as $student): ?>
-                            <tr class="text-center">
-                                <td><?= htmlspecialchars($student['student_id']) ?></td>
-                                <td class="text-left"><?= htmlspecialchars($student['full_name']) ?></td>
-                                <td><?= htmlspecialchars($student['first_eval_score']) ?></td>
-                                <td><?= htmlspecialchars($student['second_eval_score']) ?></td>
-                                <td class="text-left"><?= htmlspecialchars($student['recommendation'] ?? 'No recommendation') ?></td>
+                            <tr>
+                                <td><?php echo htmlspecialchars($student['student_number']); ?></td>
+                                <td><?php echo htmlspecialchars($student['kinder_level']); ?></td>
+                                <td><?php echo htmlspecialchars($student['full_name']); ?></td>
+                                <td>
+                                    <?php if ($student['first_evaluation_total']): ?>
+                                        <span class="badge bg-success"><?php echo $student['first_evaluation_total']; ?></span>
+                                    <?php else: ?>
+                                        <span class="badge bg-secondary">Not Evaluated</span>
+                                    <?php endif; ?>
+                                </td>
+                                <td>
+                                    <?php if ($student['second_evaluation_total']): ?>
+                                        <span class="badge bg-success"><?php echo $student['second_evaluation_total']; ?></span>
+                                    <?php else: ?>
+                                        <span class="badge bg-secondary">Not Evaluated</span>
+                                    <?php endif; ?>
+                                </td>
+                                <td>
+                                    <a href="./view_grades.php?id=<?php echo $student['id']; ?>" class="btn btn-success btn-sm">
+                                        <i class="fa-solid fa-eye"></i> View
+                                    </a>
+                                    <a href="./update_grades.php?id=<?php echo $student['id']; ?>" class="btn btn-primary btn-sm">
+                                        <i class="fa-solid fa-edit"></i> Update
+                                    </a>
+                                </td>
                             </tr>
                         <?php endforeach; ?>
                     <?php else: ?>
                         <tr>
-                            <td colspan="5" class="text-center">No student found</td>
+                            <td colspan="6" class="text-center">No students found.</td>
                         </tr>
                     <?php endif; ?>
                 </tbody>
             </table>
-        </div>   
+        </div>
     </div>
-</main>
+    
+
+</main>T
 
 <?php
 include './includes/footer.php';

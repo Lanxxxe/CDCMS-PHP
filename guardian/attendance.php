@@ -10,9 +10,13 @@ require_once '../config/database.php';
 // $guardianMiddleName = isset($_POST['guardian_middlename']) ? strtolower(trim($_POST['guardian_middlename'])) : '';
 // $guardianLastName = isset($_POST['guardian_lastname']) ? strtolower(trim($_POST['guardian_lastname'])) : '';
 
-$guardianFirstName ='Johnpaul';
-$guardianMiddleName = 'Araceli';
-$guardianLastName = 'Daniel';
+$guardianFirstName = $_SESSION['first_name'];
+$guardianMiddleName = $_SESSION['middle_name'];
+$guardianLastName = $_SESSION['last_name'];
+
+// $guardianFirstName ='Johnpaul';
+// $guardianMiddleName = 'Araceli';
+// $guardianLastName = 'Daniel';
 
 // Redirect if required fields are empty
 if (empty($guardianFirstName) || empty($guardianLastName)) {
