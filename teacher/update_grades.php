@@ -223,27 +223,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 
 // Helper function to provide specific recommendations by area
-function getSpecificRecommendation($area, $kinderLevel) {
-    $recommendations = [
-        "gross motor skills" => "Incorporate more physical activities like obstacle courses, ball games, and dancing. These activities help develop coordination, balance, and strength.",
-        
-        "fine motor skills" => "Provide opportunities for drawing, cutting with scissors, stringing beads, and manipulating small objects. These activities help develop hand-eye coordination and finger dexterity.",
-        
-        "self-help skills" => "Encourage independence in daily routines like dressing, eating, and personal hygiene. Break tasks into smaller steps and provide positive reinforcement.",
-        
-        "receptive language" => "Read books together daily, play listening games, and give clear, simple instructions. Ensure the student understands by asking them to repeat or demonstrate understanding.",
-        
-        "expressive language" => "Engage in conversations, ask open-ended questions, and encourage the student to describe activities, feelings, and experiences. Model correct language use without criticism.",
-        
-        "cognitive skills" => "Introduce puzzles, sorting activities, and simple problem-solving games. Ask questions that promote critical thinking and provide opportunities for exploration and discovery.",
-        
-        "socio-emotional skills" => "Create opportunities for cooperative play, teach emotional vocabulary, and model appropriate ways to express feelings. Use role-play to practice social situations."
-    ];
-    
-    return $recommendations[$area] ?? "Provide additional support and practice in this area.";
-}   
-
-
 
 include './includes/header.php';
 ?>
