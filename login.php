@@ -58,14 +58,11 @@ unset($_SESSION['code_resent']);
                             unset($_SESSION['registration_success']);
 
                         if (isset($_SESSION['login_error'])): ?>
-                            <div class="alert alert-danger alert-dismissible small" role="alert">
-                                <div><?php echo $_SESSION['login_error'] ?></div>
+                            <div class="alert alert-danger alert-dismissible fade show small" role="alert">
+                                <strong>Error:</strong> <?php echo $_SESSION['login_error']; ?>
                                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                             </div>
-                        <?php 
-                            endif;
-                            unset($_SESSION['login_error']);
-                        ?>
+                        <?php endif; ?>
                         <button type="submit" class="btn btn-success w-100">Login</button>
                     </form>
                     <!-- <p class="text-center mt-3">Already have an account? <a href="./registration.php">Register Here</a></p> -->
